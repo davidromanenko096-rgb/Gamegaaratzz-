@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Global: Absolute Edition</title>
+    <style>
+        :root { --gold: #ffcc00; --bg: #0a0a0a; --panel: #161616; --neon: #00f2ff; --vip: #ff00ff; }
+        body { background: var(--bg); color: white; font-family: 'Arial', sans-serif; margin: 0; user-select: none; overflow: hidden; }
+        
+        /* Шапка */
+        .header { background: #111; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 100; }
+        .res { font-size: 1.3em; font-weight: bold; }
+
+        /* Табы */
+        .tab-content { display: none; height: calc(100vh - 160px); overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .tab-content.active { display: block; }
+
+        /* Навигация (БОЛЬШАЯ И УДОБНАЯ) */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #333; height: 90px; align-items: center; }
+        .nav-item { cursor: pointer; color: #888; text-align: center; flex: 1; transition: 0.3s; }
+        .nav-item b { display: block; font-size: 2em; margin-bottom: 2px; }
+        .nav-item span { font-size: 0.8em; font-weight: bold; }
+        .nav-item.active { color: var(--gold); }
+
+        /* Зона клика */
+        .click-area { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        #coin { 
+            width: 240px; height: 240px; 
+            background: radial-gradient(circle, #ffeb3b, #fbc02d, #f57f17); 
+            border-radius: 50%; border: 8px solid #aa7d00;
+            box-shadow: 0 0 40px rgba(255,204,0,0.4);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 90px;
+            transition: transform 0.05s;
+        }
+        #coin:active { transform: scale(0.9); }
+
+        /* Карточки */
+        .card { background: var(--panel); border-radius: 15px; padding: 15px; margin-bottom: 12px; border: 1px solid #333; }
+        .card h3 { margin: 0 0 5px; color: var(--gold); }
+        .btn { background: var(--gold); border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; font-size: 1em; }
+        .btn-vip { background: var(--vip); color: white; }
+        .btn-neon { background: var(--neon); color: black; }
+
+        /* Окна входа и настроек */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; flex-direction: column; }
+        .modal { background: #1a1a1a; padding: 30px; border-radius: 20px; width: 85%; max-width: 350px; border: 1px solid var(--gold); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+
+        /* Топ игроков */
+        .top-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="res">💰 <span id="score">0</span></div>
+    <div class="res">💎 <span id="diamonds">0</span></div>
+</div>
+
+<div id="main" class="tab-content active">
+    <div class="click-area">
+        <div id="coin">💰</div>
+        <h2 style="margin-top:20px;">Сила: <span id="p_power">1</span></h2>
+        <div style="color:#00ff00; font-weight:bold; margin-top:10px;">💎 До алмаза: <span id="dia-timer">10:00</span></div>
+        <p style="color:#666; font-size: 0.8em; margin-top:10px;">Всего кликов: <span id="total_clicks">0</span></p>
+    </div>
+</div>
+
+<div id="shop" class="tab-content">
+    <h3>🛒 Рынок</h3>
+    <div class="card">
+        <h3>Улучшить Клик</h3>
+        <p>Цена: <span id="p_cost">10</span> 💰</p>
+        <button class="btn" onclick="buyUpgrade()">Улучшить</button>
+    </div>
+    <div class="card">
+        <h3>Авто-Кликер</h3>
+        <p>Цена: <span id="a_cost">80</span> 💰</p>
+        <button class="btn" onclick="buyAuto()">Купить</button>
+    </div>
+    <div class="card">
+        <h3>⛏️ Шахтерство (10к)</h3>
+        <p>Приносит +20/сек</p>
+        <button class="btn" onclick="buyMining()">Нанять</button>
+    </div>
+    <div class="card">
+        <h3>💎 Алмазный Буст I (10к)</h3>
+        <p>Ускорение до 5 минут</p>
+        <button class="btn" id="db1" onclick="buyDiaBoost(10000, 300, 'db1')">Ускорить</button>
+    </div>
+    <div class="card">
+        <h3>💎 Алмазный Буст II (100к)</h3>
+        <p>Ускорение до 4 минут</p>
+        <button class="btn" id="db2" onclick="buyDiaBoost(100000, 240, 'db2')">МАКС. Ускорение</button>
+    </div>
+</div>
+
+<div id="chests" class="tab-content">
+    <h3>📦 Сундуки (50/50)</h3>
+    <div class="card">
+        <h3>Обычный сундук</h3>
+        <p>Приз до 2000 | Цена: 1000 💰</p>
+        <button class="btn" onclick="openChest(1)">Открыть</button>
+    </div>
+    <div class="card">
+        <h3>Золотой сундук</h3>
+        <p>Приз до 20к | Цена: 10000 💰</p>
+        <button class="btn" onclick="openChest(2)">Открыть</button>
+    </div>
+</div>
+
+<div id="vip" class="tab-content">
+    <h3 style="color:var(--vip)">👑 VIP ЗОНА</h3>
+    <div class="card" style="border-color:var(--neon)">
+        <h3>⚡ Ультра-Нажим</h3>
+        <p>+50 силы за клик</p>
+        <p>Цена: 10 💎</p>
+        <button class="btn btn-neon" onclick="buyVipPower()">КУПИТЬ</button>
+    </div>
+    <div class="card" style="border-color:var(--vip)">
+        <h3>🌀 Турбо-Режим</h3>
+        <p>+50 кликов в секунду</p>
+        <p>Цена: 20 💎</p>
+        <button class="btn btn-vip" onclick="buyVipAuto()">КУПИТЬ</button>
+    </div>
+</div>
+
+<div id="top" class="tab-content">
+    <h3>🌍 Топ Игроков</h3>
+    <div id="leader-list">Загрузка...</div>
+    <button class="btn" onclick="loadTop()" style="margin-top:15px;">Обновить</button>
+</div>
+
+<div class="nav-bar">
+    <div class="nav-item active" onclick="showTab('main', this)"><b>🏠</b><span>Главная</span></div>
+    <div class="nav-item" onclick="showTab('shop', this)"><b>🛒</b><span>Рынок</span></div>
+    <div class="nav-item" onclick="showTab('chests', this)"><b>📦</b><span>Кейсы</span></div>
+    <div class="nav-item" onclick="showTab('vip', this)"><b>👑</b><span>VIP</span></div>
+    <div class="nav-item" onclick="showTab('top', this)"><b>🌍</b><span>Топ</span></div>
+    <div class="nav-item" onclick="showTab('set-modal', null, true)"><b>⚙️</b><span>Сет</span></div>
+</div>
+
+<div id="auth-box" class="overlay" style="display: flex;">
+    <div class="modal">
+        <h2>EMPIRE LOGIN</h2>
+        <input type="text" id="nick" placeholder="Ник">
+        <input type="password" id="pass" placeholder="Пароль">
+        <button class="btn" onclick="login()">ВОЙТИ / СОЗДАТЬ</button>
+    </div>
+</div>
+
+<div id="set-modal" class="overlay">
+    <div class="modal">
+        <h3>НАСТРОЙКИ</h3>
+        <p>Звук клика:</p>
+        <input type="range" id="vol" min="0" max="1" step="0.1" value="0.5">
+        <button class="btn" style="background:#ff4444; color:white;" onclick="location.reload()">Сменить Аккаунт</button>
+        <button class="btn" style="background:#444;" onclick="closeModal('set-modal')">Закрыть</button>
+    </div>
+</div>
+
+<audio id="tick" src="https://www.soundjay.com/buttons/button-50.mp3" preload="auto"></audio>
+
+<script>
+    let score = 0, diamonds = 0, p_power = 1, a_power = 0, total_clicks = 0;
+    let diaSpeed = 600, secondsToDia = 600, isVip = 0;
+    let nick = "", pass = "";
+
+    function showTab(id, el, isModal = false) {
+        if(isModal) { document.getElementById(id).style.display = 'flex'; return; }
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(el) el.classList.add('active');
+        if(id === 'top') loadTop();
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    document.getElementById('coin').onclick = () => {
+        score += p_power; total_clicks++;
+        let s = document.getElementById('tick');
+        s.volume = document.getElementById('vol').value;
+        s.currentTime = 0; s.play();
+        updateUI();
+    };
+
+    function updateUI() {
+        document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+        document.getElementById('diamonds').innerText = diamonds;
+        document.getElementById('p_power').innerText = p_power;
+        document.getElementById('total_clicks').innerText = total_clicks;
+        document.getElementById('p_cost').innerText = Math.floor(10 * Math.pow(1.5, p_power));
+        document.getElementById('a_cost').innerText = Math.floor(80 * Math.pow(1.4, a_power + 1));
+        let m = Math.floor(secondsToDia / 60), s = secondsToDia % 60;
+        document.getElementById('dia-timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // МАГАЗИН
+    function buyUpgrade() {
+        let cost = Math.floor(10 * Math.pow(1.5, p_power));
+        if(score >= cost) { score -= cost; p_power++; updateUI(); save(); }
+    }
+    function buyAuto() {
+        let cost = Math.floor(80 * Math.pow(1.4, a_power + 1));
+        if(score >= cost) { score -= cost; a_power++; updateUI(); save(); }
+    }
+    function buyMining() { if(score >= 10000) { score -= 10000; a_power += 20; updateUI(); save(); } }
+    function buyDiaBoost(cost, speed, btnId) {
+        if(score >= cost) { score -= cost; diaSpeed = speed; secondsToDia = Math.min(secondsToDia, speed); document.getElementById(btnId).disabled = true; updateUI(); save(); }
+    }
+
+    // VIP
+    function buyVipPower() { if(diamonds >= 10) { diamonds -= 10; p_power += 50; updateUI(); save(); } }
+    function buyVipAuto() { if(diamonds >= 20) { diamonds -= 20; a_power += 50; updateUI(); save(); } }
+
+    // СУНДУКИ
+    function openChest(t) {
+        let cost = (t === 1) ? 1000 : 10000;
+        if(score < cost) return;
+        score -= cost;
+        if(Math.random() > 0.5) {
+            let win = (t === 1) ? [500,1000,1500,2000] : [5000,10000,15000,20000];
+            let res = win[Math.floor(Math.random()*4)];
+            score += res; alert("УДАЧА! Выигрыш: " + res);
+        } else alert("ПУСТО...");
+        updateUI(); save();
+    }
+
+    // СЕРВЕР
+    async function login() {
+        nick = document.getElementById('nick').value;
+        pass = document.getElementById('pass').value;
+        if(!nick || !pass) return;
+        const res = await fetch('https://gaaratzz228.pythonanywhere.com/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nick: nick, pass: pass, score: 0})
+        });
+        const d = await res.json();
+        if(d.status === "success") {
+            if(d.score !== undefined) {
+                score = d.score; diamonds = d.diamonds; p_power = d.p; a_power = d.a; total_clicks = d.tc;
+            }
+            closeModal('auth-box'); updateUI(); setInterval(save, 20000);
+        } else alert(d.message);
+    }
+
+    async function save() {
+        if(!nick) return;
+        fetch('https://gaaratzz228.pythonanywhere.com/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nick: nick, pass: pass, score: score, diamonds: diamonds, p: p_power, a: a_power, tc: total_clicks, m: 0})
+        });
+    }
+
+    async function loadTop() {
+        const list = document.getElementById('leader-list');
+        try {
+            const res = await fetch('https://gaaratzz228.pythonanywhere.com/get_leaderboard');
+            const data = await res.json();
+            list.innerHTML = data.map((p, i) => `<div class="top-row"><span>${i+1}. ${p[0]}</span><span>${Math.floor(p[1])} 💰</span></div>`).join('');
+        } catch(e) { list.innerHTML = "Ошибка связи."; }
+    }
+
+    setInterval(() => { score += a_power; secondsToDia--; if(secondsToDia <= 0) { diamonds++; secondsToDia = diaSpeed; } updateUI(); }, 1000);
+</script>
+</body>
+</html>
