@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кликер Империя</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(circle at 20% 20%, #1e2a4a 0%, #0a0e1a 60%, #05070d 100%);
+    color: #e8eefc;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 80% 70%, rgba(80,120,255,.12), transparent 45%),
+      radial-gradient(circle at 15% 85%, rgba(160,80,255,.10), transparent 40%);
+    pointer-events: none;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(10,14,26,.75);
+    border-bottom: 1px solid rgba(120,160,255,.15);
+    padding: 14px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #7fb0ff, #b98cff, #6ff2d0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: .5px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #7f8db3;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .diamond-value { color: #7ff2ff; }
+
+  nav {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 10px 20px;
+    border: 1px solid rgba(120,160,255,.2);
+    background: rgba(30,42,74,.5);
+    color: #b8c4e0;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: .2s;
+  }
+
+  .tab-btn:hover { background: rgba(50,70,120,.6); color: #fff; }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, #3a5bd9, #8a4fd9);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 20px rgba(90,120,255,.4);
+  }
+
+  main { padding: 10px 20px 60px; max-width: 1200px; margin: 0 auto; }
+
+  .tab-content { display: none; animation: fade .25s ease; }
+  .tab-content.active { display: block; }
+
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ==== КЛИКЕР ==== */
+  .clicker-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 30px 0;
+  }
+
+  .click-zone {
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #5b7cff, #2a3a8f 55%, #141d47);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: transform .08s;
+    box-shadow:
+      0 0 0 2px rgba(140,180,255,.25),
+      0 0 40px rgba(90,120,255,.45),
+      inset 0 8px 40px rgba(255,255,255,.15);
+  }
+
+  .click-zone:hover { transform: scale(1.03); }
+  .click-zone:active { transform: scale(.95); }
+
+  .click-zone .emoji {
+    font-size: 80px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
+    pointer-events: none;
+  }
+
+  .click-zone .sub {
+    font-size: 14px;
+    color: rgba(255,255,255,.7);
+    margin-top: 6px;
+    pointer-events: none;
+  }
+
+  .float-text {
+    position: fixed;
+    pointer-events: none;
+    font-weight: 700;
+    font-size: 20px;
+    color: #9fffcf;
+    text-shadow: 0 0 10px rgba(110,255,190,.8);
+    animation: floatUp .9s ease-out forwards;
+    z-index: 100;
+  }
+
+  @keyframes floatUp {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(-70px) scale(1.3); }
+  }
+
+  .click-info {
+    text-align: center;
+    color: #9fb0d8;
+    font-size: 15px;
+  }
+
+  .click-info b { color: #cfe0ff; }
+
+  /* ==== КАРТОЧКИ ==== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: linear-gradient(160deg, rgba(40,55,95,.55), rgba(20,28,50,.7));
+    border: 1px solid rgba(120,160,255,.14);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: .2s;
+  }
+
+  .card:hover { border-color: rgba(140,180,255,.35); transform: translateY(-3px); }
+
+  .card.locked { opacity: .45; filter: grayscale(.4); }
+
+  .card-top { display: flex; align-items: center; gap: 12px; }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    background: rgba(90,120,255,.15);
+    flex-shrink: 0;
+  }
+
+  .card-title { font-size: 16px; font-weight: 700; }
+  .card-desc { font-size: 12px; color: #8494b8; }
+
+  .card-effect {
+    font-size: 13px;
+    color: #9fe8c0;
+    font-weight: 600;
+  }
+
+  .card-owned { font-size: 12px; color: #b98cff; font-weight: 600; }
+
+  .buy-btn {
+    margin-top: auto;
+    padding: 11px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3a5bd9, #7a4fd9);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+  }
+
+  .buy-btn:hover:not(:disabled) { filter: brightness(1.15); box-shadow: 0 4px 18px rgba(90,120,255,.45); }
+  .buy-btn:disabled { background: rgba(60,70,100,.6); color: #7f8db3; cursor: not-allowed; }
+
+  .buy-btn.diamond {
+    background: linear-gradient(135deg, #1a9fb5, #24d4c4);
+  }
+
+  .hint {
+    text-align: center;
+    color: #6b7a9c;
+    font-size: 13px;
+    padding: 30px 10px;
+  }
+
+  /* ==== АЛМАЗЫ ==== */
+  .diamond-shop .card { border-color: rgba(70,220,230,.2); }
+
+  .prestige-box {
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(160deg, rgba(40,55,95,.5), rgba(20,28,50,.6));
+    border-radius: 18px;
+    border: 1px solid rgba(120,160,255,.15);
+  }
+
+  .prestige-box h2 { margin-bottom: 12px; font-size: 22px; }
+  .prestige-box p { color: #93a3c8; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+
+  .prestige-btn {
+    padding: 14px 34px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #b93aff, #ff4fd9);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+  }
+
+  .prestige-btn:hover { filter: brightness(1.15); box-shadow: 0 6px 26px rgba(200,80,255,.5); }
+  .prestige-btn:disabled { background: rgba(60,70,100,.6); cursor: not-allowed; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(30,45,80,.95);
+    border: 1px solid rgba(120,160,255,.3);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    opacity: 0;
+    transition: .3s;
+    z-index: 200;
+    backdrop-filter: blur(10px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">💎 Кликер Империя</div>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Баланс</span>
+      <span class="stat-value" id="money">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">В секунду</span>
+      <span class="stat-value" id="cps">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Алмазы</span>
+      <span class="stat-value diamond-value" id="diamonds">0</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-tab="clicker">Кликер</button>
+  <button class="tab-btn" data-tab="upgrades">Апгрейды</button>
+  <button class="tab-btn" data-tab="generators">Генераторы</button>
+  <button class="tab-btn" data-tab="diamondShop">Алмазный магазин</button>
+  <button class="tab-btn" data-tab="prestige">Престиж</button>
+</nav>
+
+<main>
+
+  <!-- КЛИКЕР -->
+  <section class="tab-content active" id="clicker">
+    <div class="clicker-wrap">
+      <div class="click-zone" id="clickZone">
+        <span class="emoji">🖱️</span>
+        <span class="sub">Жми!</span>
+      </div>
+      <div class="click-info">
+        За клик: <b id="perClick">1</b> 💰<br>
+        Всего кликов: <b id="totalClicks">0</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- АПГРЕЙДЫ -->
+  <section class="tab-content" id="upgrades">
+    <h2 style="margin-bottom:16px;">Апгрейды клика</h2>
+    <div class="grid" id="upgradesGrid"></div>
+  </section>
+
+  <!-- ГЕНЕРАТОРЫ -->
+  <section class="tab-content" id="generators">
+    <h2 style="margin-bottom:16px;">Генераторы дохода</h2>
+    <div class="grid" id="generatorsGrid"></div>
+  </section>
+
+  <!-- АЛМАЗНЫЙ МАГАЗИН -->
+  <section class="tab-content diamond-shop" id="diamondShop">
+    <h2 style="margin-bottom:16px;">💎 Алмазный магазин</h2>
+    <p style="color:#8494b8; margin-bottom:20px; font-size:14px;">
+      Алмазы дают за престиж. Трать их на мощные постоянные бонусы.
+    </p>
+    <div class="grid" id="diamondGrid"></div>
+  </section>
+
+  <!-- ПРЕСТИЖ -->
+  <section class="tab-content" id="prestige">
+    <div class="prestige-box">
+      <h2>✨ Престиж</h2>
+      <p>
+        Сбрось весь прогресс (деньги, апгрейды, генераторы), но получи алмазы.<br>
+        Алмазы дают постоянные бонусы и не сбрасываются.
+      </p>
+      <p>
+        При престиже получишь: <b id="prestigePreview" style="color:#7ff2ff;">0 💎</b>
+      </p>
+      <button class="prestige-btn" id="prestigeBtn">Совершить престиж</button>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================== СОСТОЯНИЕ ================== */
+const state = {
+  money: 0,
+  diamonds: 0,
+  totalClicks: 0,
+  clickValue: 1,
+  clickMultiplier: 1,       // от апгрейдов клика
+  diamondClickBonus: 0,     // +% к клику от алмазов
+  diamondIncomeBonus: 0,    // +% к доходу/сек от алмазов
+  diamondOfflineBonus: 0,   // +% к оффлайн доходу
+  prestigeCount: 0,
+
+  upgrades: {},   // id -> level
+  generators: {}, // id -> level
+  diamondUpgrades: {} // id -> level
+};
+
+/* ================== АПГРЕЙДЫ КЛИКА ================== */
+const UPGRADES = [
+  { id:'u1', icon:'👆', name:'Крепкий палец', desc:'Увеличивает силу клика', base:15, growth:1.15, effect:1, type:'add' },
+  { id:'u2', icon:'💪', name:'Мышцы', desc:'Больше за клик', base:120, growth:1.18, effect:3, type:'add' },
+  { id:'u3', icon:'⚡', name:'Скорость', desc:'Больше за клик', base:800, growth:1.2, effect:8, type:'add' },
+  { id:'u4', icon:'🔥', name:'Огненный клик', desc:'+5% за уровень к клику', base:5000, growth:1.25, effect:0.05, type:'mult' },
+  { id:'u5', icon:'🌟', name:'Звёздный удар', desc:'+10% за уровень к клику', base:50000, growth:1.3, effect:0.10, type:'mult' },
+  { id:'u6', icon:'🌌', name:'Космическая сила', desc:'+25% за уровень к клику', base:1e6, growth:1.35, effect:0.25, type:'mult' }
+];
+
+/* ================== ГЕНЕРАТОРЫ ================== */
+const GENERATORS = [
+  { id:'g1', icon:'🥉', name:'Копилка', desc:'Простой источник дохода', base:50, growth:1.15, income:1 },
+  { id:'g2', icon:'🏪', name:'Ларёк', desc:'Торговля идёт', base:600, growth:1.16, income:8 },
+  { id:'g3', icon:'🏭', name:'Фабрика', desc:'Массовое производство', base:8000, growth:1.17, income:60 },
+  { id:'g4', icon:'🏦', name:'Банк', desc:'Проценты капают', base:90000, growth:1.18, income:500 },
+  { id:'g5', icon:'🛰️', name:'Спутник', desc:'Данные = деньги', base:1.2e6, growth:1.19, income:5000 },
+  { id:'g6', icon:'🚀', name:'Космопорт', desc:'Межпланетная торговля', base:2e7, growth:1.2, income:60000 },
+  { id:'g7', icon:'🌍', name:'Планета', desc:'Целая планета активов', base:4e8, growth:1.21, income:800000 },
+  { id:'g8', icon:'🪐', name:'Галактика', desc:'Империя растёт', base:1e10, growth:1.22, income:1e7 }
+];
+
+/* ================== АЛМАЗНЫЕ АПГРЕЙДЫ ================== */
+const DIAMOND_UPGRADES = [
+  { id:'d1', icon:'💪', name:'Сила клика', desc:'+25% к силе клика за уровень', cost:1, costGrowth:1.5, max:20, apply:'click' },
+  { id:'d2', icon:'💰', name:'Доход', desc:'+25% к доходу/сек за уровень', cost:1, costGrowth:1.5, max:20, apply:'income' },
+  { id:'d3', icon:'🌙', name:'Оффлайн', desc:'+50% к оффлайн доходу за уровень', cost:2, costGrowth:1.6, max:10, apply:'offline' },
+  { id:'d4', icon:'🎯', name:'Крит клик', desc:'+20% к крит-клику за уровень', cost:3, costGrowth:1.7, max:15, apply:'crit' }
+];
+
+/* ================== ФОРМУЛЫ ================== */
+function upgradeCost(u) {
+  const lvl = state.upgrades[u.id] || 0;
+  return Math.floor(u.base * Math.pow(u.growth, lvl));
+}
+
+function generatorCost(g) {
+  const lvl = state.generators[g.id] || 0;
+  return Math.floor(g.base * Math.pow(g.growth, lvl));
+}
+
+function diamondUpgradeCost(d) {
+  const lvl = state.diamondUpgrades[d.id] || 0;
+  return Math.ceil(d.cost * Math.pow(d.costGrowth, lvl));
+}
+
+function getClickValue() {
+  let base = state.clickValue;
+
+  // аддитивные апгрейды
+  UPGRADES.forEach(u => {
+    const lvl = state.upgrades[u.id] || 0;
+    if (u.type === 'add') base += u.effect * lvl;
+  });
+
+  // множители от апгрейдов
+  let mult = 1;
+  UPGRADES.forEach(u => {
+    const lvl = state.upgrades[u.id] || 0;
+    if (u.type === 'mult') mult += u.effect * lvl;
+  });
+
+  // алмазные бонусы
+  const dClick = 1 + state.diamondClickBonus / 100;
+  const dIncome = 1 + state.diamondIncomeBonus / 100;
+
+  return base * mult * dClick;
+}
+
+function getIncome() {
+  let total = 0;
+  GENERATORS.forEach(g => {
+    const lvl = state.generators[g.id] || 0;
+    total += g.income * lvl;
+  });
+  const mult = 1 + state.diamondIncomeBonus / 100;
+  return total * mult;
+}
+
+function formatNumber(n) {
+  if (n < 1000) return Math.floor(n).toString();
+  const units = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+  let i = 0;
+  while (n >= 1000 && i < units.length - 1) { n /= 1000; i++; }
+  return n.toFixed(2) + units[i];
+}
+
+function formatCost(n) {
+  return formatNumber(n) + ' 💰';
+}
+
+/* ================== РЕНДЕР ================== */
+function renderStats() {
+  document.getElementById('money').textContent = formatNumber(state.money);
+  document.getElementById('cps').textContent = formatNumber(getIncome());
+  document.getElementById('diamonds').textContent = formatNumber(state.diamonds);
+  document.getElementById('perClick').textContent = formatNumber(getClickValue());
+  document.getElementById('totalClicks').textContent = formatNumber(state.totalClicks);
+}
+
+function renderUpgrades() {
+  const grid = document.getElementById('upgradesGrid');
+  grid.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const lvl = state.upgrades[u.id] || 0;
+    const cost = upgradeCost(u);
+    const canBuy = state.money >= cost;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon">${u.icon}</div>
+        <div>
+          <div class="card-title">${u.name}</div>
+          <div class="card-desc">${u.desc}</div>
+        </div>
+      </div>
+      <div class="card-effect">Уровень: ${lvl}</div>
+      <div class="card-owned">${u.type === 'add' ? '+' + u.effect : '+' + (u.effect*100) + '%'} за уровень</div>
+      <button class="buy-btn" ${canBuy ? '' : 'disabled'}>
+        Купить — ${formatCost(cost)}
+      </button>
+    `;
+    card.querySelector('.buy-btn').onclick = () => buyUpgrade(u);
+    grid.appendChild(card);
+  });
+}
+
+function renderGenerators() {
+  const grid = document.getElementById('generatorsGrid');
+  grid.innerHTML = '';
+  GENERATORS.forEach(g => {
+    const lvl = state.generators[g.id] || 0;
+    const cost = generatorCost(g);
+    const canBuy = state.money >= cost;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon">${g.icon}</div>
+        <div>
+          <div class="card-title">${g.name}</div>
+          <div class="card-desc">${g.desc}</div>
+        </div>
+      </div>
+      <div class="card-effect">Доход: +${formatNumber(g.income)}/сек</div>
+      <div class="card-owned">Куплено: ${lvl} (${formatNumber(g.income * lvl)}/сек)</div>
+      <button class="buy-btn" ${canBuy ? '' : 'disabled'}>
+        Купить — ${formatCost(cost)}
+      </button>
+    `;
+    card.querySelector('.buy-btn').onclick = () => buyGenerator(g);
+    grid.appendChild(card);
+  });
+}
+
+function renderDiamondShop() {
+  const grid = document.getElementById('diamondGrid');
+  grid.innerHTML = '';
+  DIAMOND_UPGRADES.forEach(d => {
+    const lvl = state.diamondUpgrades[d.id] || 0;
+    const cost = diamondUpgradeCost(d);
+    const maxed = lvl >= d.max;
+    const canBuy = !maxed && state.diamonds >= cost;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon">${d.icon}</div>
+        <div>
+          <div class="card-title">${d.name}</div>
+          <div class="card-desc">${d.desc}</div>
+        </div>
+      </div>
+      <div class="card-owned">Уровень: ${lvl} / ${d.max}</div>
+      <button class="buy-btn diamond" ${canBuy ? '' : 'disabled'}>
+        ${maxed ? 'МАКС' : 'Купить — ' + cost + ' 💎'}
+      </button>
+    `;
+    if (!maxed) card.querySelector('.buy-btn').onclick = () => buyDiamondUpgrade(d);
+    grid.appendChild(card);
+  });
+}
+
+function renderPrestige() {
+  const preview = calcPrestigeReward();
+  document.getElementById('prestigePreview').textContent = preview + ' 💎';
+  const btn = document.getElementById('prestigeBtn');
+  btn.disabled = preview < 1;
+}
+
+function renderAll() {
+  renderStats();
+  renderUpgrades();
+  renderGenerators();
+  renderDiamondShop();
+  renderPrestige();
+}
+
+/* ================== ПОКУПКИ ================== */
+function buyUpgrade(u) {
+  const cost = upgradeCost(u);
+  if (state.money < cost) return;
+  state.money -= cost;
+  state.upgrades[u.id] = (state.upgrades[u.id] || 0) + 1;
+  renderAll();
+}
+
+function buyGenerator(g) {
+  const cost = generatorCost(g);
+  if (state.money < cost) return;
+  state.money -= cost;
+  state.generators[g.id] = (state.generators[g.id] || 0) + 1;
+  renderAll();
+}
+
+function buyDiamondUpgrade(d) {
+  const lvl = state.diamondUpgrades[d.id] || 0;
+  if (lvl >= d.max) return;
+  const cost = diamondUpgradeCost(d);
+  if (state.diamonds < cost) return;
+  state.diamonds -= cost;
+  state.diamondUpgrades[d.id] = lvl + 1;
+
+  if (d.apply === 'click') state.diamondClickBonus += 25;
+  if (d.apply === 'income') state.diamondIncomeBonus += 25;
+  if (d.apply === 'offline') state.diamondOfflineBonus += 50;
+
+  renderAll();
+}
+
+/* ================== ПРЕСТИЖ ================== */
+function calcPrestigeReward() {
+  // награда зависит от общего богатства
+  const income = getIncome();
+  const wealth = state.money + income * 100;
+  if (wealth < 1e6) return 0;
+  return Math.floor(Math.pow(wealth / 1e6, 0.5)) + state.prestigeCount;
+}
+
+function doPrestige() {
+  const reward = calcPrestigeReward();
+  if (reward < 1) return;
+
+  state.diamonds += reward;
+  state.prestigeCount++;
+
+  // сброс
+  state.money = 0;
+  state.totalClicks = 0;
+  state.clickValue = 1;
+  state.upgrades = {};
+  state.generators = {};
+
+  showToast(`Престиж! +${reward} 💎`);
+  saveGame();
+  renderAll();
+}
+
+/* ================== КЛИК ================== */
+const clickZone = document.getElementById('clickZone');
+
+function doClick(e) {
+  const value = getClickValue();
+  state.money += value;
+  state.totalClicks++;
+
+  // крит шанс от алмазного апгрейда d4
+  const critLvl = state.diamondUpgrades['d4'] || 0;
+  const critChance = critLvl * 0.02;
+  let crit = false;
+  if (Math.random() < critChance) {
+    state.money += value * 2;
+    crit = true;
+  }
+
+  spawnFloat(e, value, crit);
+  renderStats();
+}
+
+function spawnFloat(e, value, crit) {
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = 
