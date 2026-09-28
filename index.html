@@ -76,7 +76,6 @@ main{padding:10px 20px 60px;max-width:1200px;margin:0 auto}
 </style>
 </head>
 <body>
-
 <div id="authScreen">
 <div class="auth-box">
 <h1>Crypto Clicker</h1>
@@ -104,7 +103,6 @@ main{padding:10px 20px 60px;max-width:1200px;margin:0 auto}
 <div class="user-box"><span id="userNick">—</span><button class="logout-btn" id="logoutBtn">Выйти</button></div>
 </div>
 </header>
-
 <nav>
 <button class="tab-btn active" data-tab="clicker">Кликер</button>
 <button class="tab-btn" data-tab="upgrades">Апгрейды</button>
@@ -113,7 +111,6 @@ main{padding:10px 20px 60px;max-width:1200px;margin:0 auto}
 <button class="tab-btn" data-tab="prestige">Престиж</button>
 <button class="tab-btn" data-tab="leaderboard">🏆 Топ</button>
 </nav>
-
 <main>
 <section class="tab-content active" id="clicker">
 <div class="clicker-wrap">
@@ -258,7 +255,7 @@ card.querySelector('.buy-btn').onclick=()=>buyUpgrade(u);
 grid.appendChild(card);
 });
 }
-
+  
 function renderGenerators(){
 const grid=document.getElementById('generatorsGrid');
 grid.innerHTML='';
