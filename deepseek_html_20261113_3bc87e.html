@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Clicker — Tycoon</title>
+<style>
+:root{
+--bg0:#05070d; --bg1:#0a0e1a; --bg2:#111729;
+--panel:#121a2e; --panel2:#0e1424;
+--line:rgba(120,160,255,.14);
+--text:#e8eefc; --muted:#8494b8; --dim:#5f6d92;
+--accent:#5b7cff; --accent2:#8a4fd9; --accent3:#24d4c4;
+--good:#6ff2c0; --warn:#ffd166; --bad:#ff6b8a;
+--gold:#ffd166;
+}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;font-family:'Segoe UI',system-ui,sans-serif}
+html,body{height:100%}
+body{
+background:
+radial-gradient(circle at 15% 10%,#16203a 0%,transparent 45%),
+radial-gradient(circle at 85% 90%,#1a1030 0%,transparent 45%),
+linear-gradient(180deg,#05070d 0%,#080b14 100%);
+color:var(--text);min-height:100vh;overflow-x:hidden;
+-webkit-font-smoothing:antialiased;
+}
+body::before{
+content:'';position:fixed;inset:0;pointer-events:none;
+background:
+radial-gradient(circle at 80% 70%,rgba(80,120,255,.10),transparent 45%),
+radial-gradient(circle at 15% 85%,rgba(160,80,255,.08),transparent 40%);
+}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#0a0e1a}
+::-webkit-scrollbar-thumb{background:#243055;border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:#33447a}
+
+header{
+position:sticky;top:0;z-index:50;
+backdrop-filter:blur(16px);
+background:rgba(8,12,22,.82);
+border-bottom:1px solid var(--line);
+padding:12px 20px;
+display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+}
+.brand{font-size:22px;font-weight:800;letter-spacing:.3px;
+background:linear-gradient(90deg,#7fb0ff,#b98cff,#6ff2d0);
+-webkit-background-clip:text;background-clip:text;color:transparent;}
+.stats{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.stat{display:flex;flex-direction:column;gap:2px;min-width:80px}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);font-weight:700}
+.stat-value{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;transition:color .2s}
+.stat-value.flash{color:var(--good)}
+.diamond-value{color:#7ff2ff}
+.user-box{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(40,55,95,.4);border-radius:12px;border:1px solid var(--line);font-size:13px;font-weight:600}
+.logout-btn{padding:6px 12px;border:none;border-radius:8px;background:rgba(255,80,80,.15);color:#ff9aa5;font-size:12px;font-weight:700;cursor:pointer;transition:.2s}
+.logout-btn:hover{background:rgba(255,80,80,.25)}
+.icon-btn{padding:8px 12px;border:1px solid var(--line);background:rgba(40,55,95,.4);color:var(--text);border-radius:10px;cursor:pointer;font-size:14px;transition:.2s}
+.icon-btn:hover{background:rgba(60,80,140,.5)}
+.icon-btn.off{opacity:.5}
+
+nav{display:flex;gap:8px;padding:14px 20px;flex-wrap:wrap;max-width:1300px;margin:0 auto}
+.tab-btn{
+padding:10px 18px;border:1px solid var(--line);
+background:rgba(20,28,50,.5);color:#b8c4e0;border-radius:12px;
+cursor:pointer;font-size:13.5px;font-weight:700;transition:.18s;
+display:flex;align-items:center;gap:8px;
+}
+.tab-btn:hover{background:rgba(40,55,95,.6);transform:translateY(-1px)}
+.tab-btn.active{
+background:linear-gradient(135deg,#3a5bd9,#8a4fd9);color:#fff;border-color:transparent;
+box-shadow:0 6px 24px rgba(90,120,255,.35);
+}
+
+main{padding:10px 20px 80px;max-width:1300px;margin:0 auto}
+.tab-content{display:none;animation:fadeIn .25s ease}
+.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+h2.section-title{font-size:20px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.section-sub{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.55}
+
+.clicker-wrap{display:flex;flex-direction:column;align-items:center;gap:26px;padding:30px 0 10px}
+.click-zone{
+width:280px;height:280px;border-radius:50%;position:relative;
+background:
+radial-gradient(circle at 35% 30%,#7a9dff 0%,#3a54c8 40%,#1a2470 75%,#0e1538 100%);
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+cursor:pointer;transition:transform .07s ease,box-shadow .3s;
+box-shadow:
+0 0 0 3px rgba(140,180,255,.22),
+0 0 60px rgba(90,120,255,.45),
+inset 0 10px 50px rgba(255,255,255,.14),
+inset 0 -20px 60px rgba(0,0,0,.5);
+}
+.click-zone::after{
+content:'';position:absolute;inset:-14px;border-radius:50%;
+border:1px dashed rgba(140,180,255,.18);animation:spin 22s linear infinite;pointer-events:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.click-zone:active{transform:scale(.94)}
+.click-zone.pulse{animation:pulse .3s ease}
+@keyframes pulse{0%{box-shadow:0 0 0 3px rgba(140,180,255,.22),0 0 60px rgba(90,120,255,.45),inset 0 10px 50px rgba(255,255,255,.14)}50%{box-shadow:0 0 0 6px rgba(140,180,255,.35),0 0 90px rgba(120,160,255,.7),inset 0 10px 50px rgba(255,255,255,.2)}100%{box-shadow:0 0 0 3px rgba(140,180,255,.22),0 0 60px rgba(90,120,255,.45),inset 0 10px 50px rgba(255,255,255,.14)}}
+.click-zone .emoji{font-size:88px;pointer-events:none;filter:drop-shadow(0 6px 20px rgba(0,0,0,.4))}
+.click-zone .sub{font-size:14px;color:rgba(255,255,255,.75);margin-top:8px;pointer-events:none;letter-spacing:1px;font-weight:600}
+.click-info{text-align:center;color:#9fb0d8;font-size:14.5px;line-height:1.9;background:rgba(20,28,50,.45);padding:14px 26px;border-radius:14px;border:1px solid var(--line)}
+.click-info b{color:#cfe0ff;font-weight:800}
+.float-text{position:fixed;pointer-events:none;font-weight:800;font-size:22px;color:#9fffcf;text-shadow:0 0 14px rgba(110,255,190,.9);animation:floatUp 1s ease-out forwards;z-index:100}
+.float-text.crit{color:var(--gold);text-shadow:0 0 16px rgba(255,209,102,.9);font-size:26px}
+@keyframes floatUp{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-90px) scale(1.35)}}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{
+background:linear-gradient(160deg,rgba(28,38,66,.7),rgba(14,20,36,.85));
+border:1px solid var(--line);border-radius:16px;padding:18px;
+display:flex;flex-direction:column;gap:10px;transition:.2s;position:relative;overflow:hidden;
+}
+.card:hover{border-color:rgba(120,160,255,.35);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.card-top{display:flex;align-items:center;gap:12px}
+.card-icon{
+width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+font-size:27px;background:rgba(90,120,255,.15);flex-shrink:0;border:1px solid rgba(120,160,255,.12);
+}
+.card-title{font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.card-effect{font-size:13px;color:var(--good);font-weight:700}
+.card-owned{font-size:12px;color:#b98cff;font-weight:700}
+.buy-btn{
+margin-top:auto;padding:12px;border:none;border-radius:11px;
+background:linear-gradient(135deg,#3a5bd9,#7a4fd9);color:#fff;
+font-size:13.5px;font-weight:800;cursor:pointer;transition:.18s;
+display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.buy-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(90,120,255,.4)}
+.buy-btn:active:not(:disabled){transform:translateY(0)}
+.buy-btn:disabled{background:rgba(50,60,90,.6);color:#6b7899;cursor:not-allowed}
+.buy-btn.diamond{background:linear-gradient(135deg,#1a9fb5,#24d4c4)}
+
+.progress{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,#5b7cff,#24d4c4);border-radius:6px;transition:width .3s}
+
+.prestige-box{
+text-align:center;padding:34px 24px;max-width:620px;margin:0 auto;
+background:linear-gradient(160deg,rgba(40,55,95,.5),rgba(20,28,50,.65));
+border-radius:20px;border:1px solid var(--line);
+}
+.prestige-box h2{margin-bottom:12px;font-size:24px}
+.prestige-box p{color:#93a3c8;margin-bottom:16px;font-size:14px;line-height:1.7}
+.prestige-btn{
+padding:15px 38px;border:none;border-radius:13px;
+background:linear-gradient(135deg,#b93aff,#ff4fd9);color:#fff;
+font-size:16px;font-weight:800;cursor:pointer;transition:.2s;
+}
+.prestige-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(185,58,255,.4)}
+.prestige-btn:disabled{background:rgba(60,70,100,.6);cursor:not-allowed;color:#6b7899}
+
+.toast{
+position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);
+background:rgba(20,30,55,.97);border:1px solid rgba(120,160,255,.35);
+padding:13px 26px;border-radius:13px;font-weight:700;opacity:0;transition:.3s;z-index:200;
+box-shadow:0 10px 40px rgba(0,0,0,.5);font-size:14px;max-width:90vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#authScreen{
+position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+background:radial-gradient(circle at 50% 40%,#141d38,#05070d);padding:20px;
+}
+#authScreen.hidden{display:none}
+.auth-box{
+width:100%;max-width:420px;
+background:linear-gradient(160deg,rgba(40,55,95,.75),rgba(20,28,50,.9));
+border:1px solid rgba(120,160,255,.22);border-radius:22px;padding:38px 30px;
+box-shadow:0 24px 80px rgba(0,0,0,.7);
+}
+.auth-box h1{
+font-size:28px;margin-bottom:6px;text-align:center;
+background:linear-gradient(90deg,#7fb0ff,#b98cff,#6ff2d0);
+-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.auth-box p.sub{color:var(--muted);font-size:13px;margin-bottom:24px;text-align:center;line-height:1.5}
+.auth-field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.auth-field label{font-size:11px;color:#93a3c8;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
+.auth-field input{
+padding:13px 15px;border-radius:11px;background:rgba(10,14,26,.7);
+border:1px solid rgba(120,160,255,.2);color:var(--text);font-size:15px;outline:none;transition:.2s;
+}
+.auth-field input:focus{border-color:rgba(120,160,255,.55);box-shadow:0 0 0 3px rgba(90,120,255,.15)}
+.auth-btn{
+width:100%;padding:15px;border:none;border-radius:13px;
+background:linear-gradient(135deg,#3a5bd9,#8a4fd9);color:#fff;font-size:15px;font-weight:800;
+cursor:pointer;margin-top:8px;transition:.2s;
+}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(90,120,255,.4)}
+.auth-error{
+background:rgba(255,80,80,.13);border:1px solid rgba(255,80,80,.32);color:#ff9aa5;
+padding:11px 15px;border-radius:11px;font-size:13px;margin-bottom:16px;display:none;
+}
+.auth-error.show{display:block}
+.auth-status{text-align:center;font-size:13px;color:#7fb0ff;margin-top:14px;min-height:18px}
+
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;max-width:900px;margin:0 auto}
+.rec-tile{padding:18px;border-radius:14px;background:rgba(20,28,50,.5);border:1px solid var(--line);text-align:center}
+.rec-tile .rt-label{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.rec-tile .rt-value{font-size:22px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+
+.promo-box{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;max-width:680px}
+.promo-box input{
+flex:1;min-width:200px;padding:13px 15px;border-radius:11px;
+background:rgba(10,14,26,.7);border:1px solid rgba(120,160,255,.2);
+color:var(--text);font-size:14px;outline:none;transition:.2s;
+}
+.promo-box input:focus{border-color:rgba(120,160,255,.55)}
+.promo-box button{
+padding:13px 24px;border:none;border-radius:11px;
+background:linear-gradient(135deg,#3a5bd9,#8a4fd9);color:#fff;font-weight:800;cursor:pointer;transition:.2s;
+}
+.promo-box button:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(90,120,255,.4)}
+#promoHistory{max-width:680px;margin-bottom:20px}
+
+.admin-box{
+background:linear-gradient(160deg,rgba(120,40,60,.28),rgba(40,20,30,.55));
+border:1px solid rgba(255,120,120,.3);border-radius:16px;padding:22px;margin-top:20px;
+display:flex;flex-direction:column;gap:14px;max-width:680px;
+}
+.admin-box h3{color:#ff9aa5;font-size:17px}
+.admin-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.admin-row input{
+flex:1;min-width:150px;padding:11px 13px;border-radius:11px;
+background:rgba(10,14,26,.7);border:1px solid rgba(255,120,120,.3);
+color:var(--text);font-size:14px;outline:none;
+}
+.admin-row button{
+padding:11px 18px;border:none;border-radius:11px;
+background:linear-gradient(135deg,#d93a5b,#d97a4f);color:#fff;font-weight:800;cursor:pointer;transition:.2s;
+}
+.admin-row button:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(217,58,91,.35)}
+
+.company-badge{display:inline-block;padding:3px 9px;border-radius:7px;font-size:10.5px;font-weight:800;letter-spacing:.3px}
+.industry-tech{background:rgba(90,140,255,.22);color:#9fc0ff}
+.industry-finance{background:rgba(80,220,160,.18);color:#9fffd0}
+.industry-energy{background:rgba(255,200,80,.18);color:#ffe0a0}
+.industry-space{background:rgba(200,120,255,.18);color:#e0b0ff}
+.industry-media{background:rgba(255,120,160,.18);color:#ffb0c0}
+.industry-food{background:rgba(120,255,160,.18);color:#b0ffc0}
+
+.event-banner{
+max-width:680px;margin:0 auto 20px;
+padding:16px 20px;border-radius:14px;
+background:linear-gradient(135deg,rgba(255,200,80,.15),rgba(255,120,160,.12));
+border:1px solid rgba(255,200,80,.35);
+display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.event-banner .ev-icon{font-size:28px}
+.event-banner .ev-body{flex:1;min-width:180px}
+.event-banner .ev-title{font-weight:800;font-size:14.5px;color:var(--gold)}
+.event-banner .ev-desc{font-size:12.5px;color:#e0c890;margin-top:3px}
+.event-banner .ev-timer{font-weight:800;font-variant-numeric:tabular-nums;font-size:16px;color:#fff}
+.event-banner .ev-btn{padding:9px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#c98a1a,#e0b443);color:#1a1200;font-weight:800;cursor:pointer;font-size:13px}
+.event-banner .ev-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;max-width:900px}
+.ach-card{
+padding:14px 16px;border-radius:13px;background:rgba(20,28,50,.5);
+border:1px solid var(--line);display:flex;align-items:center;gap:12px;transition:.2s;
+}
+.ach-card.done{border-color:rgba(110,255,190,.4);background:rgba(30,60,50,.35)}
+.ach-card.locked{opacity:.55}
+.ach-icon{font-size:26px}
+.ach-title{font-weight:800;font-size:13.5px}
+.ach-desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+.daily-box{
+max-width:680px;margin:0 auto 20px;padding:18px 22px;border-radius:14px;
+background:linear-gradient(135deg,rgba(36,212,196,.12),rgba(90,120,255,.10));
+border:1px solid rgba(36,212,196,.3);
+display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.daily-box .d-icon{font-size:32px}
+.daily-box .d-body{flex:1;min-width:180px}
+.daily-box .d-title{font-weight:800;font-size:15px;color:var(--accent3)}
+.daily-box .d-desc{font-size:12.5px;color:#9fded8;margin-top:3px}
+.daily-box .d-btn{padding:11px 20px;border:none;border-radius:11px;background:linear-gradient(135deg,#1a9fb5,#24d4c4);color:#fff;font-weight:800;cursor:pointer;font-size:13.5px}
+.daily-box .d-btn:disabled{opacity:.5;cursor:not-allowed;background:rgba(50,60,90,.6)}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+<div class="auth-box">
+<h1>💎 Crypto Clicker</h1>
+<p class="sub">Введи ник — прогресс сохранится в этом браузере. Пароль не нужен.</p>
+<div class="auth-error" id="authError"></div>
+<div class="auth-field">
+<label>Никнейм</label>
+<input type="text" id="nickInput" placeholder="твой_ник (латиница, цифры, _)" maxlength="20" autocomplete="off">
+</div>
+<button class="auth-btn" id="authBtn">Играть</button>
+<div class="auth-status" id="authStatus"></div>
+</div>
+</div>
+
+<header>
+<div class="brand">💎 Crypto Clicker</div>
+<div class="stats">
+<div class="stat"><span class="stat-label">Баланс</span><span class="stat-value" id="money">0</span></div>
+<div class="stat"><span class="stat-label">В секунду</span><span class="stat-value" id="cps">0</span></div>
+<div class="stat"><span class="stat-label">Алмазы</span><span class="stat-value diamond-value" id="diamonds">0</span></div>
+<div class="user-box"><span id="userNick">—</span>
+<button class="icon-btn" id="soundBtn" title="Звук">🔊</button>
+<button class="logout-btn" id="logoutBtn">Выйти</button>
+</div>
+</div>
+</header>
+
+<nav>
+<button class="tab-btn active" data-tab="clicker">🖱️ Кликер</button>
+<button class="tab-btn" data-tab="upgrades">⚡ Апгрейды</button>
+<button class="tab-btn" data-tab="generators">🏭 Генераторы</button>
+<button class="tab-btn" data-tab="companies">🏢 Фирмы</button>
+<button class="tab-btn" data-tab="diamondShop">💎 Алмазы</button>
+<button class="tab-btn" data-tab="prestige">✨ Престиж</button>
+<button class="tab-btn" data-tab="promo">🎟 Промокоды</button>
+<button class="tab-btn" data-tab="achievements">🏆 Достижения</button>
+<button class="tab-btn" data-tab="records">📊 Рекорды</button>
+</nav>
+
+<main>
+<section class="tab-content active" id="clicker">
+<div class="clicker-wrap">
+<div class="event-banner" id="eventBanner" style="display:none">
+<div class="ev-icon">⚡</div>
+<div class="ev-body">
+<div class="ev-title">Акция</div>
+<div class="ev-desc">Описание</div>
+</div>
+<div class="ev-timer">0с</div>
+<button class="ev-btn">Активно</button>
+</div>
+<div class="click-zone" id="clickZone">
+<span class="emoji">🖱️</span>
+<span class="sub">ЖМИ!</span>
+</div>
+<div class="click-info">
+За клик: <b id="perClick">1</b> 💰 &nbsp;·&nbsp; Крит-шанс: <b id="critChance">0%</b> &nbsp;·&nbsp; Всего кликов: <b id="totalClicks">0</b>
+</div>
+</div>
+</section>
+
+<section class="tab-content" id="upgrades">
+<h2 class="section-title">⚡ Апгрейды клика</h2>
+<p class="section-sub">Увеличивают силу клика. Чем выше уровень — тем дороже следующий.</p>
+<div class="grid" id="upgradesGrid"></div>
+</section>
+
+<section class="tab-content" id="generators">
+<h2 class="section-title">🏭 Генераторы дохода</h2>
+<p class="section-sub">Пассивный доход в секунду. Работают, даже когда ты офлайн.</p>
+<div class="grid" id="generatorsGrid"></div>
+</section>
+
+<section class="tab-content" id="companies">
+<h2 class="section-title">🏢 Фирмы</h2>
+<p class="section-sub">Крупный пассивный доход + бонус к силе клика. Каждая отрасль даёт свои бонусы.</p>
+<div class="grid" id="companiesGrid"></div>
+</section>
+
+<section class="tab-content" id="diamondShop">
+<h2 class="section-title">💎 Алмазный магазин</h2>
+<p class="section-sub">Алмазы дают за престиж и акции. Трать их на постоянные бонусы.</p>
+<div class="grid" id="diamondGrid"></div>
+</section>
+
+<section class="tab-content" id="prestige">
+<div class="prestige-box">
+<h2>✨ Престиж</h2>
+<p>Сбрось прогресс (деньги, апгрейды, генераторы, фирмы), но получи алмазы.<br>Алмазы дают постоянные бонусы и не сбрасываются.</p>
+<p>При престиже получишь: <b id="prestigePreview" style="color:#7ff2ff">0 💎</b></p>
+<button class="prestige-btn" id="prestigeBtn">Совершить престиж</button>
+</div>
+</section>
+
+<section class="tab-content" id="promo">
+<h2 class="section-title">🎟 Промокоды</h2>
+<p class="section-sub">Введи одноразовый промокод. Каждый код можно активировать только один раз.</p>
+<div class="promo-box">
+<input type="text" id="promoInput" placeholder="Введите промокод..." autocomplete="off">
+<button id="promoBtn">Активировать</button>
+</div>
+<div id="promoHistory"></div>
+
+<div class="daily-box" id="dailyBox">
+<div class="d-icon">🎁</div>
+<div class="d-body">
+<div class="d-title">Ежедневный бонус</div>
+<div class="d-desc" id="dailyDesc">Заходи каждый день и получай награду!</div>
+</div>
+<button class="d-btn" id="dailyBtn">Забрать</button>
+</div>
+
+<div class="admin-box" id="adminBox" style="display:none">
+<h3>🛠 Админ-панель</h3>
+<div class="admin-row">
+<input type="number" id="adminMoney" placeholder="Сколько денег добавить">
+<button id="adminAddMoney">Добавить деньги</button>
+</div>
+<div class="admin-row">
+<input type="number" id="adminDiamonds" placeholder="Сколько алмазов добавить">
+<button id="adminAddDiamonds">Добавить алмазы</button>
+</div>
+<div class="admin-row">
+<button id="adminReset">Сбросить прогресс</button>
+</div>
+</div>
+</section>
+
+<section class="tab-content" id="achievements">
+<h2 class="section-title">🏆 Достижения</h2>
+<p class="section-sub">Открывай достижения и получай награды. Всего достижений — много, хватит надолго.</p>
+<div class="ach-grid" id="achGrid"></div>
+</section>
+
+<section class="tab-content" id="records">
+<h2 class="section-title">📊 Рекорды</h2>
+<p class="section-sub">Твои личные достижения на этом устройстве.</p>
+<div class="rec-grid">
+<div class="rec-tile"><div class="rt-label">Текущий баланс</div><div class="rt-value" id="recMoney">0</div></div>
+<div class="rec-tile"><div class="rt-label">Лучший баланс</div><div class="rt-value" id="recBestMoney">0</div></div>
+<div class="rec-tile"><div class="rt-label">Всего кликов</div><div class="rt-value" id="recClicks">0</div></div>
+<div class="rec-tile"><div class="rt-label">Престижей</div><div class="rt-value diamond" id="recPrestige">0</div></div>
+<div class="rec-tile"><div class="rt-label">Алмазов заработано</div><div class="rt-value diamond" id="recDiamonds">0</div></div>
+<div class="rec-tile"><div class="rt-label">Промокодов</div><div class="rt-value" id="recPromo">0</div></div>
+</div>
+</section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= ЗВУК ======================= */
+var soundOn = true;
+try { var s = localStorage.getItem('cc_sound'); if(s==='0') soundOn=false; } catch(e){}
+var AC = null;
+function ensureAudio(){
+  if(!AC){
+    try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ AC = null; }
+  }
+  if(AC && AC.state === 'suspended'){ AC.resume(); }
+}
+function beep(freq, dur, type, vol){
+  if(!soundOn) return;
+  ensureAudio();
+  if(!AC) return;
+  try{
+    var o = AC.createOscillator();
+    var g = AC.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, AC.currentTime);
+    g.gain.linearRampToValueAtTime(vol || 0.08, AC.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur + 0.02);
+  }catch(e){}
+}
+function sfxClick(){ beep(520 + Math.random()*80, 0.06, 'triangle', 0.05); }
+function sfxCrit(){ beep(880, 0.09, 'sawtooth', 0.07); setTimeout(function(){beep(1320,0.12,'triangle',0.06)}, 60); }
+function sfxBuy(){ beep(440, 0.07, 'sine', 0.06); setTimeout(function(){beep(660,0.09,'sine',0.06)}, 55); }
+function sfxError(){ beep(180, 0.15, 'square', 0.05); }
+function sfxPrestige(){ beep(523,0.12,'triangle',0.07); setTimeout(function(){beep(659,0.12,'triangle',0.07)},90); setTimeout(function(){beep(784,0.16,'triangle',0.07)},180); }
+function sfxPromo(){ beep(660,0.08,'sine',0.06); setTimeout(function(){beep(880,0.1,'sine',0.06)},70); setTimeout(function(){beep(1100,0.14,'sine',0.06)},140); }
+
+/* ======================= ХРАНИЛИЩЕ ======================= */
+var STORAGE_KEY = 'cc_save_v3';
+var NICK_KEY = 'cc_nick_v3';
+
+var state = {
+  nick:'', money:0, diamonds:0, totalClicks:0, clickValue:1,
+  diamondClickBonus:0, diamondIncomeBonus:0, diamondCritBonus:0,
+  prestigeCount:0, upgrades:{}, generators:{}, companies:{}, diamondUpgrades:{},
+  promoUsed:{}, isAdmin:false, bestMoney:0, totalDiamondsEarned:0,
+  achievements:{}, lastDaily:0, dailyStreak:0,
+  lastEventTs:0, eventEndTs:0, eventType:'', eventClaimed:false,
+  critCount:0, lastSaved: Date.now()
+};
+
+/* ======================= КОНТЕНТ ======================= */
+var UPGRADES = [
+  {id:'u1',icon:'👆',name:'Крепкий палец',desc:'Увеличивает силу клика',base:15,growth:1.15,effect:1,type:'add'},
+  {id:'u2',icon:'💪',name:'Мышцы',desc:'Больше за клик',base:120,growth:1.18,effect:3,type:'add'},
+  {id:'u3',icon:'⚡',name:'Скорость',desc:'Больше за клик',base:800,growth:1.20,effect:8,type:'add'},
+  {id:'u4',icon:'🔥',name:'Огненный клик',desc:'+5% за уровень',base:5000,growth:1.25,effect:0.05,type:'mult'},
+  {id:'u5',icon:'🌟',name:'Звёздный удар',desc:'+10% за уровень',base:50000,growth:1.30,effect:0.10,type:'mult'},
+  {id:'u6',icon:'🌌',name:'Космическая сила',desc:'+25% за уровень',base:1e6,growth:1.35,effect:0.25,type:'mult'},
+  {id:'u7',icon:'🧬',name:'Кибер-имплант',desc:'+60% за уровень',base:5e7,growth:1.40,effect:0.60,type:'mult'},
+  {id:'u8',icon:'🧿',name:'Артефакт',desc:'+150% за уровень',base:2e9,growth:1.45,effect:1.5,type:'mult'}
+];
+
+var GENERATORS = [
+  {id:'g1',icon:'🥉',name:'Копилка',desc:'Простой доход',base:50,growth:1.15,income:1},
+  {id:'g2',icon:'🏪',name:'Ларёк',desc:'Торговля',base:600,growth:1.16,income:8},
+  {id:'g3',icon:'🏭',name:'Фабрика',desc:'Производство',base:8000,growth:1.17,income:60},
+  {id:'g4',icon:'🏦',name:'Банк',desc:'Проценты',base:90000,growth:1.18,income:500},
+  {id:'g5',icon:'🛰️',name:'Спутник',desc:'Данные',base:1.2e6,growth:1.19,income:5000},
+  {id:'g6',icon:'🚀',name:'Космопорт',desc:'Торговля',base:2e7,growth:1.20,income:60000},
+  {id:'g7',icon:'🌍',name:'Планета',desc:'Активы',base:4e8,growth:1.21,income:800000},
+  {id:'g8',icon:'🪐',name:'Галактика',desc:'Империя',base:1e10,growth:1.22,income:1e7},
+  {id:'g9',icon:'🌌',name:'Вселенная',desc:'Космос',base:1e13,growth:1.23,income:2e8},
+  {id:'g10',icon:'♾️',name:'Мультивселенная',desc:'Бесконечность',base:1e16,growth:1.24,income:5e9}
+];
+
+var COMPANIES = [
+  {id:'c1',icon:'💻',name:'IT-стартап',industry:'tech',desc:'Разработка софта',base:1e4,growth:1.22,income:120,clickBonus:0.02,industryName:'Технологии'},
+  {id:'c2',icon:'🏦',name:'Инвестфонд',industry:'finance',desc:'Управление капиталом',base:2e5,growth:1.23,income:2500,clickBonus:0.03,industryName:'Финансы'},
+  {id:'c3',icon:'⚡',name:'Энергокомпания',industry:'energy',desc:'Электричество',base:5e6,growth:1.24,income:50000,clickBonus:0.04,industryName:'Энергетика'},
+  {id:'c4',icon:'🛰️',name:'Космокорпорация',industry:'space',desc:'Запуски ракет',base:2e8,growth:1.25,income:1200000,clickBonus:0.06,industryName:'Космос'},
+  {id:'c5',icon:'📺',name:'Медиахолдинг',industry:'media',desc:'Реклама и стриминг',base:1e10,growth:1.26,income:4e7,clickBonus:0.08,industryName:'Медиа'},
+  {id:'c6',icon:'🍔',name:'Фуд-корпорация',industry:'food',desc:'Сеть ресторанов',base:5e11,growth:1.27,income:1.5e9,clickBonus:0.10,industryName:'Еда'},
+  {id:'c7',icon:'🧠',name:'Нейросеть',industry:'tech',desc:'ИИ-платформа',base:1e14,growth:1.28,income:1e11,clickBonus:0.15,industryName:'Технологии'},
+  {id:'c8',icon:'🌐',name:'Мегакорпорация',industry:'space',desc:'Планетарный масштаб',base:1e17,growth:1.30,income:1e13,clickBonus:0.25,industryName:'Космос'}
+];
+
+var DIAMOND_UPGRADES = [
+  {id:'d1',icon:'💪',name:'Сила клика',desc:'+25% к клику',cost:1,costGrowth:1.5,max:20,apply:'click'},
+  {id:'d2',icon:'💰',name:'Доход',desc:'+25% к доходу/сек',cost:1,costGrowth:1.5,max:20,apply:'income'},
+  {id:'d3',icon:'🎯',name:'Крит клик',desc:'+2% шанс крита',cost:3,costGrowth:1.7,max:15,apply:'crit'},
+  {id:'d4',icon:'🏢',name:'Бонус фирм',desc:'+10% к доходу фирм',cost:5,costGrowth:1.8,max:15,apply:'company'},
+  {id:'d5',icon:'✨',name:'Множитель престижа',desc:'+15% к награде престижа',cost:8,costGrowth:2.0,max:10,apply:'prestige'}
+];
+
+var PROMO_CODES = {
+  'clikerpro': {type:'diamonds', amount:5, label:'Clikerpro: +5 💎'},
+  'onepiece': {type:'diamonds', amount:10, label:'onepiece: +10 💎'},
+  '000000': {type:'admin', label:'Админ-код: доступ к панели'},
+  'crypto': {type:'diamonds', amount:3, label:'crypto: +3 💎'},
+  'clicker': {type:'money', amount:50000, label:'clicker: +50 000 💰'}
+};
+
+var EVENTS = [
+  {id:'ev_double_click',icon:'⚡',title:'Двойной клик!',desc:'Сила клика удвоена',duration:60,type:'click_mult',mult:2},
+  {id:'ev_double_income',icon:'💰',title:'Золотая лихорадка!',desc:'Доход/сек удвоен',duration:60,type:'income_mult',mult:2},
+  {id:'ev_crit_boost',icon:'🎯',title:'Крит-мания!',desc:'+50% к шансу крита',duration:60,type:'crit_add',amount:0.5},
+  {id:'ev_diamond_gift',icon:'💎',title:'Алмазный дождь!',desc:'Бесплатные алмазы',duration:45,type:'diamond_gift',amount:2},
+  {id:'ev_big_mult',icon:'🌟',title:'Мега-буст!',desc:'x3 к клику и доходу',duration:40,type:'big_mult',mult:3}
+];
+
+var ACHIEVEMENTS = [
+  {id:'a1',icon:'👆',title:'Первый клик',desc:'Сделай 1 клик',check:function(){return state.totalClicks>=1},reward:{diamonds:1}},
+  {id:'a2',icon:'👆',title:'100 кликов',desc:'Сделай 100 кликов',check:function(){return state.totalClicks>=100},reward:{diamonds:2}},
+  {id:'a3',icon:'👆',title:'1000 кликов',desc:'Сделай 1000 кликов',check:function(){return state.totalClicks>=1000},reward:{diamonds:5}},
+  {id:'a4',icon:'👆',title:'10 000 кликов',desc:'Сделай 10 000 кликов',check:function(){return state.totalClicks>=10000},reward:{diamonds:10}},
+  {id:'a5',icon:'💰',title:'Миллионер',desc:'Накопи 1M денег',check:function(){return state.money>=1e6},reward:{diamonds:3}},
+  {id:'a6',icon:'💰',title:'Мультимиллионер',desc:'Накопи 1B денег',check:function(){return state.money>=1e9},reward:{diamonds:8}},
+  {id:'a7',icon:'💰',title:'Миллиардер',desc:'Накопи 1T денег',check:function(){return state.money>=1e12},reward:{diamonds:15}},
+  {id:'a8',icon:'🏭',title:'Первый генератор',desc:'Купи 1 генератор',check:function(){return sumObj(state.generators)>=1},reward:{diamonds:1}},
+  {id:'a9',icon:'🏭',title:'10 генераторов',desc:'Купи 10 генераторов',check:function(){return sumObj(state.generators)>=10},reward:{diamonds:3}},
+  {id:'a10',icon:'🏭',title:'100 генераторов',desc:'Купи 100 генераторов',check:function(){return sumObj(state.generators)>=100},reward:{diamonds:10}},
+  {id:'a11',icon:'🏢',title:'Первая фирма',desc:'Купи 1 фирму',check:function(){return sumObj(state.companies)>=1},reward:{diamonds:3}},
+  {id:'a12',icon:'🏢',title:'Бизнес-империя',desc:'Купи 20 фирм',check:function(){return sumObj(state.companies)>=20},reward:{diamonds:15}},
+  {id:'a13',icon:'✨',title:'Первый престиж',desc:'Соверши 1 престиж',check:function(){return state.prestigeCount>=1},reward:{diamonds:5}},
+  {id:'a14',icon:'✨',title:'5 престижей',desc:'Соверши 5 престижей',check:function(){return state.prestigeCount>=5},reward:{diamonds:20}},
+  {id:'a15',icon:'💎',title:'Коллекционер',desc:'Накопи 50 алмазов',check:function(){return state.diamonds>=50},reward:{diamonds:5}},
+  {id:'a16',icon:'🎟',title:'Промо-мастер',desc:'Активируй 2 промокода',check:function(){return Object.keys(state.promoUsed).length>=2},reward:{diamonds:3}},
+  {id:'a17',icon:'🔥',title:'Крит-мастер',desc:'Поймай 50 критов',check:function(){return (state.critCount||0)>=50},reward:{diamonds:5}},
+  {id:'a18',icon:'🎯',title:'Крит-легенда',desc:'Поймай 500 критов',check:function(){return (state.critCount||0)>=500},reward:{diamonds:15}}
+];
+
+/* ======================= УТИЛИТЫ ======================= */
+function sumObj(o){ var t=0; for(var k in o){ if(Object.prototype.hasOwnProperty.call(o,k)) t+=o[k]; } return t; }
+function upgradeCost(u){var lvl=state.upgrades[u.id]||0;return Math.floor(u.base*Math.pow(u.growth,lvl));}
+function generatorCost(g){var lvl=state.generators[g.id]||0;return Math.floor(g.base*Math.pow(g.growth,lvl));}
+function companyCost(c){var lvl=state.companies[c.id]||0;return Math.floor(c.base*Math.pow(c.growth,lvl));}
+function diamondUpgradeCost(d){var lvl=state.diamondUpgrades[d.id]||0;return Math.ceil(d.cost*Math.pow(d.costGrowth,lvl));}
+
+function eventActive(){
+  return state.eventEndTs > Date.now() && state.eventType;
+}
+function getEvent(){
+  if(!eventActive()) return null;
+  for(var i=0;i<EVENTS.length;i++){ if(EVENTS[i].id===state.eventType) return EVENTS[i]; }
+  return null;
+}
+
+function getClickValue(){
+  var base=1;
+  UPGRADES.forEach(function(u){ var lvl=state.upgrades[u.id]||0; if(u.type==='add') base+=u.effect*lvl; });
+  var mult=1;
+  UPGRADES.forEach(function(u){ var lvl=state.upgrades[u.id]||0; if(u.type==='mult') mult+=u.effect*lvl; });
+  var companyClickBonus=0;
+  COMPANIES.forEach(function(c){ var lvl=state.companies[c.id]||0; companyClickBonus+=c.clickBonus*lvl; });
+  var val = base*mult*(1+state.diamondClickBonus/100+companyClickBonus);
+  var ev = getEvent();
+  if(ev){
+    if(ev.type==='click_mult') val*=ev.mult;
+    if(ev.type==='big_mult') val*=ev.mult;
+  }
+  return val;
+}
+
+function getIncome(){
+  var total=0;
+  GENERATORS.forEach(function(g){ var lvl=state.generators[g.id]||0; total+=g.income*lvl; });
+  var companyIncome=0;
+  COMPANIES.forEach(function(c){ var lvl=state.companies[c.id]||0; companyIncome+=c.income*lvl; });
+  var d4lvl=state.diamondUpgrades['d4']||0;
+  var companyMult=1+d4lvl*0.10;
+  total+=companyIncome*companyMult;
+  var val = total*(1+state.diamondIncomeBonus/100);
+  var ev = getEvent();
+  if(ev){
+    if(ev.type==='income_mult') val*=ev.mult;
+    if(ev.type==='big_mult') val*=ev.mult;
+  }
+  return val;
+}
+
+function getCritChance(){
+  var lvl=state.diamondUpgrades['d3']||0;
+  var c = lvl*0.02;
+  var ev = getEvent();
+  if(ev && ev.type==='crit_add') c += ev.amount;
+  return Math.min(c, 0.75);
+}
+
+function formatNumber(n){
+  if(n<0) return '-'+formatNumber(-n);
+  if(n<1000) return Math.floor(n).toString();
+  var units=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td'];
+  var i=0;
+  while(n>=1000&&i<units.length-1){n/=1000;i++;}
+  return n.toFixed(2)+units[i];
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+/* ======================= РЕНДЕР ======================= */
+function flashEl(el){ el.classList.add('flash'); setTimeout(function(){el.classList.remove('flash')},180); }
+
+function renderStats(){
+  var m=document.getElementById('money');
+  if(!m) return;
+  var old=m.textContent;
+  var nv=formatNumber(state.money);
+  if(old!==nv){ m.textContent=nv; flashEl(m); }
+  document.getElementById('cps').textContent=formatNumber(getIncome());
+  document.getElementById('diamonds').textContent=formatNumber(state.diamonds);
+  document.getElementById('perClick').textContent=formatNumber(getClickValue());
+  document.getElementById('totalClicks').textContent=formatNumber(state.totalClicks);
+  document.getElementById('critChance').textContent=(getCritChance()*100).toFixed(0)+'%';
+}
+
+function renderUpgrades(){
+  var grid=document.getElementById('upgradesGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  UPGRADES.forEach(function(u){
+    var lvl=state.upgrades[u.id]||0;
+    var cost=upgradeCost(u);
+    var canBuy=state.money>=cost;
+    var card=document.createElement('div');
+    card.className='card';
+    card.innerHTML='<div class="card-top"><div class="card-icon">'+u.icon+'</div><div><div class="card-title">'+u.name+'</div><div class="card-desc">'+u.desc+'</div></div></div>'+
+      '<div class="card-effect">Уровень: '+lvl+'</div>'+
+      '<div class="card-owned">'+(u.type==='add'?'+'+u.effect:'+'+(u.effect*100)+'%')+' за уровень</div>'+
+      '<button class="buy-btn" '+(canBuy?'':'disabled')+'>Купить — '+formatNumber(cost)+' 💰</button>';
+    card.querySelector('.buy-btn').onclick=function(){buyUpgrade(u);};
+    grid.appendChild(card);
+  });
+}
+
+function renderGenerators(){
+  var grid=document.getElementById('generatorsGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  GENERATORS.forEach(function(g){
+    var lvl=state.generators[g.id]||0;
+    var cost=generatorCost(g);
+    var canBuy=state.money>=cost;
+    var card=document.createElement('div');
+    card.className='card';
+    card.innerHTML='<div class="card-top"><div class="card-icon">'+g.icon+'</div><div><div class="card-title">'+g.name+'</div><div class="card-desc">'+g.desc+'</div></div></div>'+
+      '<div class="card-effect">+'+formatNumber(g.income)+'/сек</div>'+
+      '<div class="card-owned">Куплено: '+lvl+'</div>'+
+      '<button class="buy-btn" '+(canBuy?'':'disabled')+'>Купить — '+formatNumber(cost)+' 💰</button>';
+    card.querySelector('.buy-btn').onclick=function(){buyGenerator(g);};
+    grid.appendChild(card);
+  });
+}
+
+function renderCompanies(){
+  var grid=document.getElementById('companiesGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  COMPANIES.forEach(function(c){
+    var lvl=state.companies[c.id]||0;
+    var cost=companyCost(c);
+    var canBuy=state.money>=cost;
+    var d4lvl=state.diamondUpgrades['d4']||0;
+    var companyMult=1+d4lvl*0.10;
+    var card=document.createElement('div');
+    card.className='card';
+    card.innerHTML='<div class="card-top"><div class="card-icon">'+c.icon+'</div><div><div class="card-title">'+c.name+'<span class="company-badge industry-'+c.industry+'">'+c.industryName+'</span></div><div class="card-desc">'+c.desc+'</div></div></div>'+
+      '<div class="card-effect">+'+formatNumber(c.income*companyMult)+'/сек</div>'+
+      '<div class="card-owned">Уровень: '+lvl+' · +'+(c.clickBonus*lvl*100).toFixed(0)+'% к клику</div>'+
+      '<button class="buy-btn" '+(canBuy?'':'disabled')+'>Купить — '+formatNumber(cost)+' 💰</button>';
+    card.querySelector('.buy-btn').onclick=function(){buyCompany(c);};
+    grid.appendChild(card);
+  });
+}
+
+function renderDiamondShop(){
+  var grid=document.getElementById('diamondGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  DIAMOND_UPGRADES.forEach(function(d){
+    var lvl=state.diamondUpgrades[d.id]||0;
+    var cost=diamondUpgradeCost(d);
+    var maxed=lvl>=d.max;
+    var canBuy=!maxed&&state.diamonds>=cost;
+    var card=document.createElement('div');
+    card.className='card';
+    card.innerHTML='<div class="card-top"><div class="card-icon">'+d.icon+'</div><div><div class="card-title">'+d.name+'</div><div class="card-desc">'+d.desc+'</div></div></div>'+
+      '<div class="card-owned">Уровень: '+lvl+' / '+d.max+'</div>'+
+      '<div class="progress"><i style="width:'+((lvl/d.max)*100)+'%"></i></div>'+
+      '<button class="buy-btn diamond" '+(canBuy?'':'disabled')+'>'+(maxed?'МАКС':'Купить — '+cost+' 💎')+'</button>';
+    if(!maxed) card.querySelector('.buy-btn').onclick=function(){buyDiamondUpgrade(d);};
+    grid.appendChild(card);
+  });
+}
+
+function renderPrestige(){
+  var el=document.getElementById('prestigePreview');
+  var btn=document.getElementById('prestigeBtn');
+  if(!el||!btn) return;
+  var preview=calcPrestigeReward();
+  el.textContent=preview+' 💎';
+  btn.disabled=preview<1;
+}
+
+function renderPromo(){
+  var history=document.getElementById('promoHistory');
+  if(!history) return;
+  var used=Object.keys(state.promoUsed||{});
+  if(used.length===0){ history.innerHTML='<p style="color:#8494b8">Пока нет активированных кодов</p>'; }
+  else { history.innerHTML=used.map(function(k){ return '<div style="padding:6px 0;color:#9fe8c0">✓ '+escapeHtml(k)+'</div>'; }).join(''); }
+  var adminBox=document.getElementById('adminBox');
+  if(adminBox) adminBox.style.display=state.isAdmin?'flex':'none';
+}
+
+function renderRecords(){
+  var ids=['recMoney','recBestMoney','recClicks','recPrestige','recDiamonds','recPromo'];
+  ids.forEach(function(id){ if(!document.getElementById(id)) return; });
+  if(document.getElementById('recMoney')) document.getElementById('recMoney').textContent=formatNumber(state.money);
+  if(document.getElementById('recBestMoney')) document.getElementById('recBestMoney').textContent=formatNumber(state.bestMoney);
+  if(document.getElementById('recClicks')) document.getElementById('recClicks').textContent=formatNumber(state.totalClicks);
+  if(document.getElementById('recPrestige')) document.getElementById('recPrestige').textContent=state.prestigeCount;
+  if(document.getElementById('recDiamonds')) document.getElementById('recDiamonds').textContent=formatNumber(state.totalDiamondsEarned);
+  if(document.getElementById('recPromo')) document.getElementById('recPromo').textContent=Object.keys(state.promoUsed||{}).length;
+}
+
+function renderAchievements(){
+  var grid=document.getElementById('achGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  ACHIEVEMENTS.forEach(function(a){
+    var done=!!state.achievements[a.id];
+    var card=document.createElement('div');
+    card.className='ach-card '+(done?'done':'locked');
+    card.innerHTML='<div class="ach-icon">'+a.icon+'</div><div><div class="ach-title">'+a.title+'</div><div class="ach-desc">'+a.desc+'</div></div>';
+    grid.appendChild(card);
+  });
+}
+
+function renderEvent(){
+  var el=document.getElementById('eventBanner');
+  if(!el) return;
+  var ev=getEvent();
+  if(!ev){ el.style.display='none'; return; }
+  el.style.display='flex';
+  var left=Math.max(0, Math.ceil((state.eventEndTs-Date.now())/1000));
+  el.querySelector('.ev-icon').textContent=ev.icon;
+  el.querySelector('.ev-title').textContent=ev.title;
+  el.querySelector('.ev-desc').textContent=ev.desc;
+  el.querySelector('.ev-timer').textContent=left+'с';
+  var btn=el.querySelector('.ev-btn');
+  if(ev.type==='diamond_gift' && !state.eventClaimed){
+    btn.disabled=false; btn.textContent='Забрать 💎';
+  } else if(ev.type==='diamond_gift' && state.eventClaimed){
+    btn.disabled=true; btn.textContent='Получено';
+  } else {
+    btn.disabled=true; btn.textContent='Активно';
+  }
+}
+
+function renderAll(){
+  renderStats();renderUpgrades();renderGenerators();renderCompanies();
+  renderDiamondShop();renderPrestige();renderPromo();renderRecords();
+  renderAchievements();renderEvent();renderDaily();
+}
+
+/* ======================= ПОКУПКИ ======================= */
+function buyUpgrade(u){
+  var cost=upgradeCost(u);
+  if(state.money<cost){ sfxError(); return; }
+  state.money-=cost;state.upgrades[u.id]=(state.upgrades[u.id]||0)+1;
+  sfxBuy();renderAll();scheduleSave();checkAchievements();
+}
+function buyGenerator(g){
+  var cost=generatorCost(g);
+  if(state.money<cost){ sfxError(); return; }
+  state.money-=cost;state.generators[g.id]=(state.generators[g.id]||0)+1;
+  sfxBuy();renderAll();scheduleSave();checkAchievements();
+}
+function buyCompany(c){
+  var cost=companyCost(c);
+  if(state.money<cost){ sfxError(); return; }
+  state.money-=cost;state.companies[c.id]=(state.companies[c.id]||0)+1;
+  sfxBuy();renderAll();scheduleSave();checkAchievements();
+}
+function buyDiamondUpgrade(d){
+  var lvl=state.diamondUpgrades[d.id]||0;
+  if(lvl>=d.max){ sfxError(); return; }
+  var cost=diamondUpgradeCost(d);
+  if(state.diamonds<cost){ sfxError(); return; }
+  state.diamonds-=cost;state.diamondUpgrades[d.id]=lvl+1;
+  if(d.apply==='click')state.diamondClickBonus+=25;
+  if(d.apply==='income')state.diamondIncomeBonus+=25;
+  sfxBuy();renderAll();scheduleSave();
+}
+
+/* ======================= ПРЕСТИЖ ======================= */
+function calcPrestigeReward(){
+  var wealth=state.money+getIncome()*100;
+  if(wealth<1e6) return 0;
+  var base=Math.floor(Math.pow(wealth/1e6,0.5))+state.prestigeCount;
+  var d5lvl=state.diamondUpgrades['d5']||0;
+  var mult=1+d5lvl*0.15;
+  return Math.floor(base*mult);
+}
+
+/* ======================= ЗВУК КНОПКА ======================= */
+function initSoundBtn(){
+  var soundBtn=document.getElementById('soundBtn');
+  if(!soundBtn) return;
+  soundBtn.textContent = soundOn ? '🔊' : '🔇';
+  soundBtn.classList.toggle('off', !soundOn);
+  soundBtn.onclick=function(){
+    soundOn=!soundOn;
+    soundBtn.textContent = soundOn ? '🔊' : '🔇';
+    soundBtn.classList.toggle('off', !soundOn);
+    try{ localStorage.setItem('cc_sound', soundOn?'1':'0'); }catch(e){}
+    if(soundOn) sfxClick();
+  };
+}
+
+/* ======================= ВКЛАДКИ ======================= */
+function initTabs(){
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.onclick=function(){
+      document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+      document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
+      btn.classList.add('active');
+      var el=document.getElementById(btn.dataset.tab);
+      if(el) el.classList.add('active');
+      sfxClick();
+    };
+  });
+}
+
+/* ======================= TOAST ======================= */
+var toastTimer;
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show');},2400);
+}
+
+/* ======================= ДОСТИЖЕНИЯ ======================= */
+function checkAchievements(){
+  var changed=false;
+  ACHIEVEMENTS.forEach(function(a){
+    if(state.achievements[a.id]) return;
+    if(a.check()){
+      state.achievements[a.id]=true;
+      if(a.reward.diamonds){ state.diamonds+=a.reward.diamonds; state.totalDiamondsEarned+=a.reward.diamonds; }
+      if(a.reward.money){ state.money+=a.reward.money; }
+      showToast('🏆 Достижение: '+a.title+' (+'+(a.reward.diamonds||0)+' 💎)');
+      sfxPromo();changed=true;
+    }
+  });
+  if(changed){ renderAll();scheduleSave(); }
+}
+
+/* ======================= ЕЖЕДНЕВНЫЙ БОНУС ======================= */
+function renderDaily(){
+  var btn=document.getElementById('dailyBtn');
+  var desc=document.getElementById('dailyDesc');
+  if(!btn||!desc) return;
+  var now=Date.now();
+  var oneDay=24*60*60*1000;
+  if(now-state.lastDaily<oneDay){
+    var left=oneDay-(now-state.lastDaily);
+    var h=Math.floor(left/3600000);
+    var m=Math.floor((left%3600000)/60000);
+    btn.disabled=true;
+    desc.textContent='Следующий бонус через '+h+'ч '+m+'м (стрик: '+state.dailyStreak+')';
+  } else {
+    btn.disabled=false;
+    var reward=Math.max(100, Math.floor(getIncome()*60));
+    desc.textContent='Награда: '+formatNumber(reward)+' 💰 + 1 💎 (стрик: '+state.dailyStreak+')';
+  }
+}
+
+/* ======================= СОХРАНЕНИЕ ======================= */
+function saveLocal(){
+  if(!state.nick) return;
+  try{
+    state.lastSaved=Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(NICK_KEY, state.nick);
+  }catch(e){}
+}
+
+function loadLocal(){
+  var raw=null;
+  try{ raw=localStorage.getItem(STORAGE_KEY); }catch(e){ return false; }
+  if(!raw) return false;
+  try{
+    var data=JSON.parse(raw);
+    Object.keys(state).forEach(function(k){ if(data[k]!==undefined) state[k]=data[k]; });
+    if(!state.upgrades) state.upgrades={};
+    if(!state.generators) state.generators={};
+    if(!state.companies) state.companies={};
+    if(!state.diamondUpgrades) state.diamondUpgrades={};
+    if(!state.promoUsed) state.promoUsed={};
+    if(!state.achievements) state.achievements={};
+    return !!state.nick;
+  }catch(e){ return false; }
+}
+
+var saveTimeout;
+function scheduleSave(){
+  if(!state.nick) return;
+  clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(saveLocal,1500);
+}
+
+/* ======================= ВХОД ======================= */
+function resetState(nick){
+  state.nick=nick;
+  state.money=0;state.diamonds=0;state.totalClicks=0;state.clickValue=1;
+  state.diamondClickBonus=0;state.diamondIncomeBonus=0;state.diamondCritBonus=0;
+  state.prestigeCount=0;state.upgrades={};state.generators={};state.companies={};
+  state.diamondUpgrades={};state.promoUsed={};state.isAdmin=false;
+  state.bestMoney=0;state.totalDiamondsEarned=0;state.achievements={};
+  state.lastDaily=0;state.dailyStreak=0;state.critCount=0;
+  state.lastEventTs=0;state.eventEndTs=0;state.eventType='';state.eventClaimed=false;
+}
+
+function initAuth(){
+  var authScreen=document.getElementById('authScreen');
+  var authError=document.getElementById('authError');
+  var authStatus=document.getElementById('authStatus');
+  var authBtn=document.getElementById('authBtn');
+  var nickInput=document.getElementById('nickInput');
+  if(!authScreen||!authBtn||!nickInput) return;
+
+  function showAuthError(msg){ authError.textContent=msg; authError.classList.add('show'); }
+
+  nickInput.addEventListener('keypress',function(e){ if(e.key==='Enter') authBtn.click(); });
+
+  authBtn.onclick=function(){
+    var nick=nickInput.value.trim();
+    if(nick.length<3){ showAuthError('Ник минимум 3 символа'); return; }
+    if(!/^[a-zA-Z0-9_]+$/.test(nick)){ showAuthError('Ник: только латиница, цифры, _'); return; }
+    authError.classList.remove('show');
+    authStatus.textContent='Загрузка...';
+
+    var savedNick=null;
+    try{ savedNick=localStorage.getItem(NICK_KEY); }catch(e){}
+    var hasSave=loadLocal();
+
+    if(hasSave && savedNick && savedNick.toLowerCase()===nick.toLowerCase()){
+      state.nick=savedNick;
+      showToast('С возвращением, '+state.nick+'!');
+    } else if(hasSave && state.nick && state.nick.toLowerCase()!==nick.toLowerCase()){
+      if(!confirm('На этом устройстве уже есть сохранение под ником "'+state.nick+'". Начать новый прогресс под ником "'+nick+'"?')){
+        authStatus.textContent='';return;
+      }
+      resetState(nick);
+    } else {
+      resetState(nick);
+    }
+
+    authStatus.textContent='';
+    var un=document.getElementById('userNick');
+    if(un) un.textContent=state.nick;
+    authScreen.classList.add('hidden');
+    renderAll();
+    saveLocal();
+  };
+
+  var logoutBtn=document.getElementById('logoutBtn');
+  if(logoutBtn){
+    logoutBtn.onclick=function(){
+      saveLocal();
+      state.nick='';
+      authScreen.classList.remove('hidden');
+      authStatus.textContent='';
+      nickInput.value='';
+    };
+  }
+}
+
+/* ======================= КЛИК ======================= */
+function initClicker(){
+  var clickZone=document.getElementById('clickZone');
+  if(!clickZone) return;
+  clickZone.addEventListener('click',function(e){
+    if(!state.nick) return;
+    var value=getClickValue();
+    var crit=Math.random()<getCritChance();
+    var gain=crit?value*3:value;
+    state.money+=gain;state.totalClicks++;
+    if(crit) state.critCount=(state.critCount||0)+1;
+    if(state.money>state.bestMoney) state.bestMoney=state.money;
+    if(crit) sfxCrit(); else sfxClick();
+    clickZone.classList.remove('pulse'); void clickZone.offsetWidth; clickZone.classList.add('pulse');
+    spawnFloat(e,gain,crit);
+    renderStats();scheduleSave();checkAchievements();
+  });
+}
+
+function spawnFloat(e,value,crit){
+  var clickZone=document.getElementById('clickZone');
+  if(!clickZone) return;
+  var el=document.createElement('div');
+  el.className='float-text'+(crit?' crit':'');
+  el.textContent='+'+formatNumber(value)+(crit?' КРИТ!':'');
+  var rect=clickZone.getBoundingClientRect();
+  var x=e.clientX||(rect.left+140);
+  var y=e.clientY||(rect.top+140);
+  el.style.left=(x-20)+'px';el.style.top=(y-20)+'px';
+  document.body.appendChild(el);
+  setTimeout(function(){el.remove();},1000);
+}
+
+/* ======================= ПРОМО, АДМИН, БОНУС, ПРЕСТИЖ ======================= */
+function initButtons(){
+  var promoBtn=document.getElementById('promoBtn');
+  if(promoBtn){
+    promoBtn.onclick=function(){
+      if(!state.nick) return;
+      var input=document.getElementById('promoInput');
+      var code=input.value.trim().toLowerCase();
+      if(!code){ showToast('Введите код'); sfxError(); return; }
+      var promo=PROMO_CODES[code];
+      if(!promo){ showToast('Неверный код'); sfxError(); return; }
+      if(state.promoUsed[code]){ showToast('Этот код уже активирован'); sfxError(); return; }
+      if(promo.type==='admin'){
+        state.isAdmin=true;state.promoUsed[code]=true;
+        showToast('🛠 Админ-панель разблокирована!');sfxPromo();
+      } else if(promo.type==='diamonds'){
+        state.diamonds+=promo.amount;state.totalDiamondsEarned+=promo.amount;state.promoUsed[code]=true;
+        showToast(promo.label);sfxPromo();
+      } else if(promo.type==='money'){
+        state.money+=promo.amount;state.promoUsed[code]=true;
+        showToast(promo.label);sfxPromo();
+      }
+      input.value='';
+      renderAll();scheduleSave();checkAchievements();
+    };
+  }
+
+  var dailyBtn=document.getElementById('dailyBtn');
+  if(dailyBtn){
+    dailyBtn.onclick=function(){
+      var now=Date.now();
+      var oneDay=24*60*60*1000;
+      if(now-state.lastDaily<oneDay){ sfxError(); return; }
+      if(now-state.lastDaily < oneDay*2) state.dailyStreak++; else state.dailyStreak=1;
+      var reward=Math.max(100, Math.floor(getIncome()*60));
+      state.money+=reward;
+      state.diamonds+=1;
+      state.totalDiamondsEarned+=1;
+      state.lastDaily=now;
+      sfxPromo();
+      showToast('🎁 Ежедневный бонус: +'+formatNumber(reward)+' 💰 + 1 💎');
+      renderAll();scheduleSave();checkAchievements();
+    };
+  }
+
+  var prestigeBtn=document.getElementById('prestigeBtn');
+  if(prestigeBtn){
+    prestigeBtn.onclick=function(){
+      var reward=calcPrestigeReward();
+      if(reward<1){ sfxError(); return; }
+      if(!confirm('Точно совершить престиж? Деньги, апгрейды, генераторы и фирмы сбросятся.')) return;
+      state.diamonds+=reward;state.totalDiamondsEarned+=reward;state.prestigeCount++;
+      state.money=0;state.totalClicks=0;state.upgrades={};state.generators={};state.companies={};
+      sfxPrestige();showToast('✨ Престиж! +'+reward+' 💎');
+      renderAll();scheduleSave();checkAchievements();
+    };
+  }
+
+  var am=document.getElementById('adminAddMoney');
+  if(am){
+    am.onclick=function(){
+      if(!state.isAdmin) return;
+      var val=parseFloat(document.getElementById('adminMoney').value);
+      if(!isFinite(val)||val<=0){ showToast('Введите число'); sfxError(); return; }
+      state.money+=val;if(state.money>state.bestMoney) state.bestMoney=state.money;
+      showToast('Добавлено '+formatNumber(val)+' 💰');sfxBuy();
+      renderAll();scheduleSave();checkAchievements();
+    };
+  }
+  var ad=document.getElementById('adminAddDiamonds');
+  if(ad){
+    ad.onclick=function(){
+      if(!state.isAdmin) return;
+      var val=parseFloat(document.getElementById('adminDiamonds').value);
+      if(!isFinite(val)||val<=0){ showToast('Введите число'); sfxError(); return; }
+      state.diamonds+=val;state.totalDiamondsEarned+=val;
+      showToast('Добавлено '+val+' 💎');sfxBuy();
+      renderAll();scheduleSave();checkAchievements();
+    };
+  }
+  var ar=document.getElementById('adminReset');
+  if(ar){
+    ar.onclick=function(){
+      if(!state.isAdmin) return;
+      if(!confirm('Сбросить весь прогресс (кроме ника и промо)?')) return;
+      state.money=0;state.totalClicks=0;state.upgrades={};state.generators={};state.companies={};
+      state.achievements={};state.critCount=0;
+      showToast('Прогресс сброшен');sfxBuy();
+      renderAll();scheduleSave();
+    };
+  }
+}
+
+/* ======================= СОБЫТИЯ ======================= */
+function initEvents(){
+  var banner=document.getElementById('eventBanner');
+  if(!banner) return;
+  banner.addEventListener('click',function(e){
+    if(e.target.classList.contains('ev-btn')){
+      var ev=getEvent();
+      if(ev && ev.type==='diamond_gift' && !state.eventClaimed){
+        state.diamonds+=ev.amount;
+        state.totalDiamondsEarned+=ev.amount;
+        state.eventClaimed=true;
+        sfxPromo();
+        showToast('💎 +'+ev.amount+' алмазов!');
+        renderAll();scheduleSave();
+      }
+    }
+  });
+}
+
+function tryStartEvent(){
+  var now=Date.now();
+  if(eventActive()) return;
+  if(now-state.lastEventTs < 90*1000) return;
+  if(Math.random()<0.02){
+    var ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
+    state.eventType=ev.id;
+    state.eventEndTs=now+ev.duration*1000;
+    state.eventClaimed=false;
+    state.lastEventTs=now;
+    showToast(ev.icon+' Акция: '+ev.title+'!');
+    sfxPromo();
+    renderEvent();
+  }
+}
+
+/* ======================= ЦИКЛЫ ======================= */
+var lastTime=Date.now();
+function initLoops(){
+  setInterval(function(){
+    var now=Date.now();
+    var dt=(now-lastTime)/1000;
+    lastTime=now;
+    if(!state.nick) return;
+    state.money+=getIncome()*dt;
+    if(state.money>state.bestMoney) state.bestMoney=state.money;
+    renderStats();
+  },100);
+
+  setInterval(function(){
+    if(!state.nick) return;
+    renderUpgrades();renderGenerators();renderCompanies();renderDiamondShop();
+    renderPrestige();renderPromo();renderRecords();renderAchievements();
+    renderEvent();renderDaily();
+  },1000);
+
+  setInterval(function(){
+    if(!state.nick) return;
+    if(eventActive()){
+      var left=Math.ceil((state.eventEndTs-Date.now())/1000);
+      if(left<=0){
+        state.eventType='';state.eventEndTs=0;state.eventClaimed=false;
+        showToast('Акция закончилась');
+        renderEvent();
+      } else {
+        renderEvent();
+      }
+    } else {
+      tryStartEvent();
+    }
+  },1000);
+
+  setInterval(function(){ if(state.nick) saveLocal(); }, 5000);
+  window.addEventListener('beforeunload', function(){ if(state.nick) saveLocal(); });
+}
+
+/* ======================= СТАРТ ======================= */
+function boot(){
+  initSoundBtn();
+  initTabs();
+  initAuth();
+  initClicker();
+  initButtons();
+  initEvents();
+  initLoops();
+  renderAll();
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+
+})();
+</script>
+</body>
+</html>
