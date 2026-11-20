@@ -3,73 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Idle Ranger</title>
+<title>Idle Ranger v2</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent;font-family:system-ui,sans-serif}
 body{background:#05070d;color:#e8eefc;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-#top{display:flex;justify-content:space-between;padding:8px 12px;background:#0a1020;border-bottom:1px solid #1a2540;flex-wrap:wrap;gap:6px;font-size:12px}
-#top b{color:#6ff2d0;font-variant-numeric:tabular-nums}
+#top{display:flex;justify-content:space-between;padding:10px 14px;background:#0a1020;border-bottom:2px solid #1a2540;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:700}
+#top b{color:#6ff2d0;font-variant-numeric:tabular-nums;font-size:14px}
 #top .dia b{color:#b98cff}
-#arena{flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a1428 0%,#141d38 60%,#0d1322 100%);min-height:220px}
-#ground{position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(180deg,#1a2540,#0d1322);border-top:2px solid #2a3a6a}
-#hero{position:absolute;left:14%;bottom:22%;width:44px;height:60px;transition:bottom .1s}
-#hero .body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:30px;height:34px;background:linear-gradient(180deg,#6c8cff,#3a5bd9);border-radius:8px 8px 4px 4px;box-shadow:0 0 16px rgba(108,140,255,.6)}
-#hero .head{position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:26px;background:#8fb0ff;border-radius:50%;box-shadow:0 0 12px rgba(140,176,255,.7)}
-#hero .gun{position:absolute;bottom:14px;right:-8px;width:22px;height:6px;background:#ffd166;border-radius:3px;box-shadow:0 0 8px rgba(255,209,102,.8)}
-#hero.shoot .gun{animation:recoil .12s}
-@keyframes recoil{50%{transform:translateX(-6px)}}
-#enemies{position:absolute;bottom:22%;left:0;right:0;height:80px;pointer-events:none}
-.enemy{position:absolute;bottom:0;width:36px;height:36px;border-radius:8px;transition:left .05s linear;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;box-shadow:0 0 12px rgba(255,80,80,.5)}
-.enemy.boss{width:56px;height:56px;border-radius:50%;box-shadow:0 0 24px rgba(185,58,255,.8)}
-.enemy .hpbar{position:absolute;top:-8px;left:0;right:0;height:4px;background:#2a1a1a;border-radius:2px;overflow:hidden}
-.enemy .hpbar i{display:block;height:100%;background:#ff4d4d;transition:width .1s}
-#bullets{position:absolute;inset:0;pointer-events:none}
-.bullet{position:absolute;width:12px;height:4px;background:#ffd166;border-radius:2px;box-shadow:0 0 8px rgba(255,209,102,.9)}
-.ebullet{position:absolute;width:10px;height:10px;background:#ff4d4d;border-radius:50%;box-shadow:0 0 8px rgba(255,77,77,.9)}
-#dmgLayer{position:absolute;inset:0;pointer-events:none}
-.dmg{position:absolute;font-size:13px;font-weight:800;color:#9fffcf;text-shadow:0 0 6px rgba(110,255,190,.8);animation:dmgUp .7s forwards}
-.dmg.crit{color:#ffd166;font-size:16px}
-@keyframes dmgUp{to{opacity:0;transform:translateY(-40px)}}
-#lvlInfo{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(10,16,32,.85);border:1px solid #2a3a6a;border-radius:10px;padding:4px 14px;font-size:12px;font-weight:700;text-align:center;z-index:5}
+#arena{flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#0a1428 0%,#141d38 50%,#1a2540 100%);min-height:340px}
+#ground{position:absolute;bottom:0;left:0;right:0;height:42%;background:linear-gradient(180deg,#1a2540,#0d1322);border-top:3px solid #2a3a6a}
+#ground::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#6c8cff,transparent);opacity:.5}
+#lvlInfo{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(10,16,32,.9);border:2px solid #2a3a6a;border-radius:12px;padding:6px 18px;font-size:14px;font-weight:800;text-align:center;z-index:5;white-space:nowrap}
 #lvlInfo b{color:#6ff2d0}
-#expbar{position:absolute;top:38px;left:50%;transform:translateX(-50%);width:180px;height:6px;background:#1a2540;border-radius:3px;overflow:hidden;z-index:5}
+#expbar{position:absolute;top:52px;left:50%;transform:translateX(-50%);width:220px;height:8px;background:#1a2540;border-radius:4px;overflow:hidden;z-index:5;border:1px solid #2a3a6a}
 #expbar i{display:block;height:100%;background:linear-gradient(90deg,#6c8cff,#b98cff);width:0%;transition:width .2s}
-#main{flex:1;overflow-y:auto;padding:10px 12px 88px;display:none}
+#hero{position:absolute;left:10%;bottom:30%;width:60px;height:80px;transition:bottom .1s;z-index:3}
+#hero .body{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:42px;height:48px;background:linear-gradient(180deg,#6c8cff,#3a5bd9);border-radius:10px 10px 5px 5px;box-shadow:0 0 24px rgba(108,140,255,.7),inset 0 -6px 12px rgba(0,0,0,.3)}
+#hero .head{position:absolute;top:0;left:50%;transform:translateX(-50%);width:34px;height:34px;background:linear-gradient(160deg,#8fb0ff,#5a7add);border-radius:50%;box-shadow:0 0 16px rgba(140,176,255,.8)}
+#hero .head::before{content:'';position:absolute;top:12px;left:8px;width:6px;height:6px;background:#0a1428;border-radius:50%;box-shadow:12px 0 0 #0a1428}
+#hero .gun{position:absolute;bottom:22px;right:-14px;width:32px;height:8px;background:linear-gradient(90deg,#ffd166,#ff9500);border-radius:4px;box-shadow:0 0 12px rgba(255,209,102,.9)}
+#hero.shoot .gun{animation:recoil .1s}
+@keyframes recoil{50%{transform:translateX(-8px)}}
+#hero .hpbar{position:absolute;top:-14px;left:-4px;right:-4px;height:6px;background:#2a1a1a;border-radius:3px;overflow:hidden;border:1px solid #4a2a2a}
+#hero .hpbar i{display:block;height:100%;background:linear-gradient(90deg,#ff4d4d,#ff9999);transition:width .15s}
+#hero .hpText{position:absolute;top:-24px;left:0;right:0;text-align:center;font-size:10px;font-weight:800;color:#ff9999}
+#enemies{position:absolute;bottom:30%;left:0;right:0;height:120px;pointer-events:none}
+.enemy{position:absolute;bottom:0;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;transition:left .04s linear;z-index:2}
+.enemy.boss{width:72px;height:72px;border-radius:50%;box-shadow:0 0 32px rgba(185,58,255,.9),0 0 60px rgba(255,79,217,.5)!important;border:3px solid #ff4fd9!important}
+.enemy .hpbar{position:absolute;top:-10px;left:-2px;right:-2px;height:6px;background:#2a1a1a;border-radius:3px;overflow:hidden;border:1px solid #4a2a2a}
+.enemy .hpbar i{display:block;height:100%;background:linear-gradient(90deg,#ff4d4d,#ff7777);transition:width .1s}
+.enemy.boss .hpbar{top:-14px;height:8px}
+.enemy .hpText{position:absolute;top:-22px;left:-4px;right:-4px;text-align:center;font-size:9px;font-weight:800;color:#ff9999;text-shadow:0 0 4px #000}
+#bullets{position:absolute;inset:0;pointer-events:none;z-index:4}
+.bullet{position:absolute;width:16px;height:6px;background:linear-gradient(90deg,#ffd166,#ff9500);border-radius:3px;box-shadow:0 0 10px rgba(255,209,102,1)}
+.ebullet{position:absolute;width:14px;height:14px;background:radial-gradient(circle,#ff4d4d,#7a1a1a);border-radius:50%;box-shadow:0 0 12px rgba(255,77,77,1)}
+#dmgLayer{position:absolute;inset:0;pointer-events:none;z-index:10}
+.dmg{position:absolute;font-size:16px;font-weight:900;color:#9fffcf;text-shadow:0 0 8px rgba(110,255,190,1),0 2px 4px #000;animation:dmgUp .7s forwards}
+.dmg.crit{color:#ffd166;font-size:22px;text-shadow:0 0 12px rgba(255,209,102,1),0 2px 4px #000}
+@keyframes dmgUp{to{opacity:0;transform:translateY(-50px) scale(1.2)}}
+#main{flex:1;overflow-y:auto;padding:12px 14px 100px;display:none}
 #main.on{display:block}
 .tab{display:none}
 .tab.on{display:block}
-h2{font-size:18px;margin-bottom:10px;color:#8fb0ff}
-.grid{display:flex;flex-direction:column;gap:8px}
-.card{background:#121a2e;border:1px solid #1a2540;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px}
-.card.buy{border-color:#3a5bd9}
-.ci{width:40px;height:40px;border-radius:10px;background:rgba(90,120,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#8fb0ff;flex-shrink:0}
+h2{font-size:20px;margin-bottom:12px;color:#8fb0ff;font-weight:800}
+.grid{display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(160deg,#121a2e,#0d1422);border:1px solid #1a2540;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.card.buy{border-color:#3a5bd9;box-shadow:0 0 16px rgba(58,91,217,.2)}
+.ci{width:46px;height:46px;border-radius:12px;background:rgba(90,120,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#8fb0ff;flex-shrink:0;border:1px solid rgba(120,160,255,.2)}
 .cb{flex:1;min-width:0}
-.ct{font-size:13px;font-weight:700}
-.cd{font-size:10px;color:#7f8db3}
-.ce{font-size:11px;color:#6ff2d0;font-weight:600}
-.bb{padding:8px 12px;border:none;border-radius:9px;background:linear-gradient(135deg,#3a5bd9,#7a4fd9);color:#fff;font-size:12px;font-weight:700;cursor:pointer;min-width:70px}
-.bb:disabled{background:#2a3350;color:#5a6685;cursor:not-allowed}
-.bb.d{background:linear-gradient(135deg,#7a3ad9,#b98cff)}
-#nav{position:fixed;bottom:0;left:0;right:0;background:#0a1020;border-top:1px solid #1a2540;display:flex;padding:6px 2px;z-index:100}
-.nb{flex:1;padding:6px 2px;border:none;background:none;color:#5a6685;cursor:pointer;font-size:9px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
-.nb i{font-size:16px;font-style:normal}
+.ct{font-size:14px;font-weight:800;margin-bottom:2px}
+.cd{font-size:11px;color:#7f8db3;margin-bottom:3px}
+.ce{font-size:12px;color:#6ff2d0;font-weight:700}
+.bb{padding:10px 14px;border:none;border-radius:10px;background:linear-gradient(135deg,#3a5bd9,#7a4fd9);color:#fff;font-size:13px;font-weight:800;cursor:pointer;min-width:84px;box-shadow:0 4px 12px rgba(58,91,217,.4)}
+.bb:disabled{background:#2a3350;color:#5a6685;cursor:not-allowed;box-shadow:none}
+.bb.d{background:linear-gradient(135deg,#7a3ad9,#b98cff);box-shadow:0 4px 12px rgba(185,58,255,.4)}
+#nav{position:fixed;bottom:0;left:0;right:0;background:#0a1020;border-top:2px solid #1a2540;display:flex;padding:8px 2px;z-index:100}
+.nb{flex:1;padding:8px 2px;border:none;background:none;color:#5a6685;cursor:pointer;font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s}
+.nb i{font-size:20px;font-style:normal}
 .nb.on{color:#e8eefc}
 .nb.on i{color:#8fb0ff}
-#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2d50;border:1px solid #3a5bd9;padding:10px 20px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;transition:.3s;z-index:200;max-width:90vw;text-align:center}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2d50;border:2px solid #3a5bd9;padding:12px 22px;border-radius:12px;font-weight:700;font-size:14px;opacity:0;transition:.3s;z-index:200;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.ok{border-color:#6ff2d0;color:#9fffcf}
 #toast.err{border-color:#ff4d4d;color:#ff9999}
-#petRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.pet{width:64px;height:74px;background:#121a2e;border:1px solid #2a3a6a;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#8fb0ff;position:relative}
-.pet .orb{width:32px;height:32px;border-radius:50%;box-shadow:0 0 12px currentColor;margin-bottom:4px}
-.pet .lvl{font-size:9px;color:#ffd166;font-weight:700}
-#eggBox{text-align:center;padding:16px;background:#121a2e;border:1px dashed #3a5bd9;border-radius:14px;margin-bottom:12px}
-#eggBox .egg{width:80px;height:100px;margin:0 auto 10px;background:linear-gradient(160deg,#f0e0d0,#c0a080);border-radius:50% 50% 45% 45%;box-shadow:0 0 20px rgba(200,160,120,.5);position:relative}
-#eggBox .egg::before{content:'';position:absolute;inset:15% 20% 40% 20%;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff5e0,transparent 60%)}
-.rebirth{text-align:center;padding:20px;background:linear-gradient(160deg,#2a1a4a,#1a1530);border:1px solid #4a2a7a;border-radius:16px}
+#petRow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pet{width:76px;height:90px;background:#121a2e;border:2px solid #2a3a6a;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#8fb0ff;position:relative;font-weight:700}
+.pet .orb{width:38px;height:38px;border-radius:50%;margin-bottom:5px;box-shadow:0 0 16px currentColor}
+.pet .lvl{font-size:10px;color:#ffd166;font-weight:800}
+.eggBox{text-align:center;padding:18px;background:linear-gradient(160deg,#121a2e,#0d1422);border:2px dashed #3a5bd9;border-radius:16px;margin-bottom:14px}
+.egg{width:90px;height:110px;margin:0 auto 12px;background:linear-gradient(160deg,#f0e0d0,#c0a080);border-radius:50% 50% 45% 45%;box-shadow:0 0 30px rgba(200,160,120,.6);position:relative;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.egg::before{content:'';position:absolute;inset:18% 22% 45% 22%;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff5e0,transparent 60%)}
+.egg.dia{background:linear-gradient(160deg,#d0b0ff,#8a4fd9);box-shadow:0 0 30px rgba(185,58,255,.7)}
+.rebirth{text-align:center;padding:24px;background:linear-gradient(160deg,#2a1a4a,#1a1530);border:2px solid #4a2a7a;border-radius:18px}
 .rebirth h2{color:#b98cff}
-.rebirth p{color:#7f8db3;font-size:12px;margin-bottom:12px;line-height:1.5}
-.rebirth b{color:#ffd166;font-size:20px;display:block;margin:8px 0}
+.rebirth p{color:#7f8db3;font-size:13px;margin-bottom:14px;line-height:1.6}
+.rebirth b{color:#ffd166;font-size:24px;display:block;margin:10px 0}
+.statInfo{background:#121a2e;border:1px solid #1a2540;border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.8;color:#7f8db3}
+.statInfo b{color:#6ff2d0;font-weight:800}
 </style>
 </head>
 <body>
@@ -82,9 +93,9 @@ h2{font-size:18px;margin-bottom:10px;color:#8fb0ff}
 
 <div id="arena">
 <div id="ground"></div>
-<div id="lvlInfo">Уровень <b id="aLvl">1</b> · <span id="aEnemyName">Слизень</span></div>
+<div id="lvlInfo">Уровень <b id="aLvl">1</b> · Врагов: <b id="aCount">0</b></div>
 <div id="expbar"><i id="aExp"></i></div>
-<div id="hero"><div class="gun"></div><div class="body"></div><div class="head"></div></div>
+<div id="hero"><div class="hpbar"><i id="heroHpFill" style="width:100%"></i></div><div class="hpText" id="heroHpText">10/10</div><div class="gun"></div><div class="body"></div><div class="head"></div></div>
 <div id="enemies"></div>
 <div id="bullets"></div>
 <div id="dmgLayer"></div>
@@ -92,26 +103,31 @@ h2{font-size:18px;margin-bottom:10px;color:#8fb0ff}
 
 <div id="main">
 <div class="tab on" id="tab-up">
-<h2>Прокачка</h2>
+<h2>Прокачка героя</h2>
+<div class="statInfo" id="statInfo"></div>
 <div class="grid" id="ups"></div>
 </div>
 <div class="tab" id="tab-pets">
 <h2>Петы</h2>
 <div id="petRow"></div>
-<div id="eggBox">
-<div class="egg"></div>
-<button class="bb d" id="eggBtn">Открыть яйцо · 5 💎</button>
-<div style="font-size:11px;color:#7f8db3;margin-top:8px">Каждое яйцо даёт пета с бонусом. Макс. петов: <b id="petMax">3</b></div>
+<div class="eggBox">
+<div class="egg" id="eggCoin"></div>
+<button class="bb" id="eggCoinBtn">Яйцо за монеты · <span id="eggCoinPrice">500</span>💰</button>
+</div>
+<div class="eggBox">
+<div class="egg dia" id="eggDia"></div>
+<button class="bb d" id="eggDiaBtn">Яйцо за диаманты · 5💎</button>
+<div style="font-size:12px;color:#7f8db3;margin-top:10px">Макс. петов: <b id="petMax">3</b></div>
 </div>
 <div class="grid" id="petUps"></div>
 </div>
 <div class="tab" id="tab-rebirth">
 <div class="rebirth">
 <h2>Перерождение</h2>
-<p>Сброс всего прогресса, но получишь диаманты и постоянные бонусы. Доступно после 50 уровня всех статов.</p>
+<p>Сброс всего прогресса, но получишь диаманты и постоянные бонусы. Доступно после 50 ур. каждого стата.</p>
 <b id="rebReward">0 💎</b>
 <button class="bb d" id="rebBtn">Переродиться</button>
-<p style="margin-top:12px">Перерождений: <b id="rebCount" style="display:inline;font-size:14px">0</b></p>
+<p style="margin-top:14px">Перерождений: <b id="rebCount" style="display:inline;font-size:16px">0</b></p>
 </div>
 </div>
 </div>
@@ -126,100 +142,127 @@ h2{font-size:18px;margin-bottom:10px;color:#8fb0ff}
 
 <script>
 const S={
-  money:0, diamonds:0, lvl:1, exp:0, expNeed:5,
+  money:0, diamonds:0, lvl:1, exp:0, expNeed:10,
   up:{dmg:1,hp:1,atkSpd:1,critChance:1,critDmg:1,moneyGain:1},
-  pets:[], petMax:3,
+  pets:[], petMax:3, eggCoinPrice:500,
   rebirths:0, rebirthBonus:0,
-  enemyHp:10, enemyMaxHp:10, enemyDmg:1,
-  heroHp:10, heroMaxHp:10,
-  enemyTimer:null, heroTimer:null, respawnTimer:null, animId:null
+  enemies:[], heroHp:10, heroMaxHp:10,
+  heroTimer:null, enemyTimer:null, spawnTimer:null, animId:null,
+  enemyIdCounter:0
 };
 
 const UPS=[
-  {key:'dmg',name:'Урон',desc:'+1 урона',base:10,growth:1.18},
-  {key:'hp',name:'Здоровье',desc:'+2 HP',base:12,growth:1.18},
-  {key:'atkSpd',name:'Скорость атаки',desc:'-2% перезарядки',base:20,growth:1.22,max:40},
-  {key:'critChance',name:'Шанс крита',desc:'+1% крита',base:30,growth:1.25,max:40},
-  {key:'critDmg',name:'Сила крита',desc:'+10% урона крита',base:40,growth:1.22,max:50},
-  {key:'moneyGain',name:'Доход',desc:'+10% монет',base:50,growth:1.2,max:50}
+  {key:'dmg',name:'Урон',desc:'+2 урона',base:15,growth:1.16},
+  {key:'hp',name:'Здоровье',desc:'+4 HP',base:18,growth:1.16},
+  {key:'atkSpd',name:'Скорость атаки',desc:'-2% перезарядки',base:25,growth:1.2,max:40},
+  {key:'critChance',name:'Шанс крита',desc:'+1% крита',base:40,growth:1.22,max:40},
+  {key:'critDmg',name:'Сила крита',desc:'+15% урона крита',base:55,growth:1.2,max:50},
+  {key:'moneyGain',name:'Доход',desc:'+12% монет',base:70,growth:1.18,max:50}
 ];
 
 const PET_TYPES=[
-  {color:'#ff6b6b',name:'Огонёк',bonus:'dmg',val:0.1},
-  {color:'#6ff2d0',name:'Водичка',bonus:'hp',val:0.1},
-  {color:'#ffd166',name:'Искра',bonus:'critChance',val:0.05},
-  {color:'#b98cff',name:'Тень',bonus:'moneyGain',val:0.15},
-  {color:'#6c8cff',name:'Ледок',bonus:'atkSpd',val:0.08}
+  {color:'#ff6b6b',name:'Огонёк',bonus:'dmg',val:0.12},
+  {color:'#6ff2d0',name:'Водичка',bonus:'hp',val:0.12},
+  {color:'#ffd166',name:'Искра',bonus:'critChance',val:0.04},
+  {color:'#b98cff',name:'Тень',bonus:'moneyGain',val:0.18},
+  {color:'#6c8cff',name:'Ледок',bonus:'atkSpd',val:0.06},
+  {color:'#ff9500',name:'Пламя',bonus:'critDmg',val:0.15}
+];
+
+const ENEMY_TYPES=[
+  {name:'Слизень',color:'#6bff8a',hpMul:1,dmgMul:1},
+  {name:'Гоблин',color:'#ff6b6b',hpMul:1.2,dmgMul:1.1},
+  {name:'Скелет',color:'#c0c0c0',hpMul:1.4,dmgMul:1.2},
+  {name:'Паук',color:'#8b5cf6',hpMul:1.6,dmgMul:1.3},
+  {name:'Зомби',color:'#7ac97a',hpMul:1.8,dmgMul:1.4},
+  {name:'Голем',color:'#a0a0a0',hpMul:2.2,dmgMul:1.6},
+  {name:'Демон',color:'#ff4d4d',hpMul:2.6,dmgMul:1.8},
+  {name:'Дракон',color:'#ffd166',hpMul:3.2,dmgMul:2}
 ];
 
 const $=id=>document.getElementById(id);
-const arena=$('arena'), enemiesEl=$('enemies'), bulletsEl=$('bullets'), dmgEl=$('dmgLayer');
+const arena=$('arena'),enemiesEl=$('enemies'),bulletsEl=$('bullets'),dmgEl=$('dmgLayer');
 
 function upCost(u){
   const lvl=S.up[u.key]-1;
-  if(u.max && S.up[u.key]>=u.max) return Infinity;
+  if(u.max&&S.up[u.key]>=u.max)return Infinity;
   return Math.floor(u.base*Math.pow(u.growth,lvl));
 }
-function petCost(i){return 3+i*2}
-function fmt(n){if(n<1000)return Math.floor(n).toString();const u=['','K','M','B','T'];let i=0;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(1)+u[i]}
+function petUpCost(lvl){return Math.floor(3+lvl*2.5)}
+function eggDiaCost(){return 5+S.pets.length*2}
+function fmt(n){if(n<1000)return Math.floor(n).toString();const u=['','K','M','B','T','Qa'];let i=0;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(1)+u[i]}
 
 function heroStats(){
-  let dmg=S.up.dmg, hp=S.up.hp*2+5, crit=S.up.critChance*0.01, critD=S.up.critDmg*0.1+1.5, atk=Math.max(0.25,1-S.up.atkSpd*0.02), mg=1+(S.up.moneyGain-1)*0.1;
+  let dmg=1+S.up.dmg*2, hp=(5+S.up.hp*4), crit=S.up.critChance*0.01, critD=1.5+S.up.critDmg*0.15, atk=Math.max(0.2,1-S.up.atkSpd*0.02), mg=1+(S.up.moneyGain-1)*0.12;
   S.pets.forEach(p=>{
     const t=PET_TYPES[p.type];
     if(t.bonus==='dmg')dmg*=1+t.val*p.lvl;
     if(t.bonus==='hp')hp*=1+t.val*p.lvl;
     if(t.bonus==='critChance')crit+=t.val*p.lvl;
+    if(t.bonus==='critDmg')critD+=t.val*p.lvl;
     if(t.bonus==='moneyGain')mg+=t.val*p.lvl;
     if(t.bonus==='atkSpd')atk=Math.max(0.15,atk*(1-t.val*p.lvl));
   });
   dmg*=1+S.rebirthBonus;
   hp*=1+S.rebirthBonus;
   return {dmg,hp,crit,critD,atk,mg};
-  }
-
-function spawnEnemy(){
-  if(S.respawnTimer)return;
-  const isBoss=S.lvl%10===0;
-  const baseHp=10+Math.pow(S.lvl,1.7)*4;
-  S.enemyMaxHp=Math.floor(baseHp*(isBoss?5:1));
-  S.enemyHp=S.enemyMaxHp;
-  S.enemyDmg=Math.floor(1+S.lvl*0.8);
-  const names=['Слизень','Гоблин','Скелет','Паук','Зомби','Голем','Демон','Дракон'];
-  const colors=['#6bff8a','#ff6b6b','#c0c0c0','#8b5cf6','#7ac97a','#a0a0a0','#ff4d4d','#ffd166'];
-  const idx=Math.min(names.length-1,Math.floor((S.lvl-1)/3));
-  const el=document.createElement('div');
-  el.className='enemy'+(isBoss?' boss':'');
-  el.style.background=isBoss?'radial-gradient(circle,#ff4fd9,#7a1a5a)':`linear-gradient(160deg,${colors[idx]},#2a3a5a)`;
-  el.innerHTML=`<div class="hpbar"><i></i></div>${isBoss?'БОСС':S.lvl}`;
-  el.style.left='95%';
-  enemiesEl.innerHTML='';
-  enemiesEl.appendChild(el);
-  S.enemyEl=el;
-  S.enemyName=isBoss?'Босс '+names[idx]:names[idx];
-  S.enemyIsBoss=isBoss;
-  updateUI();
-  moveEnemy();
 }
 
-function moveEnemy(){
-  if(!S.enemyEl)return;
-  const targetLeft=42;
-  const startLeft=95;
-  let cur=parseFloat(S.enemyEl.style.left)||startLeft;
-  const step=()=>{
-    if(!S.enemyEl)return;
-    if(cur>targetLeft){
-      cur-=0.3;
-      S.enemyEl.style.left=cur+'%';
-      requestAnimationFrame(step);
-    }
+function spawnEnemy(){
+  const isBoss=S.lvl%10===0&&Math.random()<0.5;
+  const typeIdx=Math.min(ENEMY_TYPES.length-1,Math.floor((S.lvl-1)/4));
+  const type=ENEMY_TYPES[typeIdx];
+  const hpMul=isBoss?6:1;
+  const baseHp=(8+Math.pow(S.lvl,1.6)*3)*type.hpMul*hpMul;
+  const enemy={
+    id:++S.enemyIdCounter,
+    hp:Math.floor(baseHp),
+    maxHp:Math.floor(baseHp),
+    dmg:Math.floor((1+S.lvl*0.6)*type.dmgMul),
+    isBoss,
+    name:isBoss?'БОСС '+type.name:type.name,
+    color:type.color,
+    x:100,
+    el:null
   };
-  step();
+  const el=document.createElement('div');
+  el.className='enemy'+(isBoss?' boss':'');
+  el.style.background=isBoss?'radial-gradient(circle at 30% 30%,#ff4fd9,#7a1a5a)':`linear-gradient(160deg,${type.color},#2a3a5a)`;
+  el.innerHTML=`<div class="hpbar"><i style="width:100%"></i></div><div class="hpText">${fmt(enemy.hp)}</div>${isBoss?'B':''}`;
+  el.style.left='100%';
+  enemiesEl.appendChild(el);
+  enemy.el=el;
+  S.enemies.push(enemy);
+  return enemy;
+}
+
+function updateEnemyHp(en){
+  if(!en.el)return;
+  const pct=Math.max(0,en.hp/en.maxHp*100);
+  const fill=en.el.querySelector('.hpbar i');
+  if(fill)fill.style.width=pct+'%';
+  const txt=en.el.querySelector('.hpText');
+  if(txt)txt.textContent=fmt(Math.max(0,en.hp));
+}
+
+let lastFrame=performance.now();
+function gameLoop(now){
+  const dt=Math.min(0.1,(now-lastFrame)/1000);
+  lastFrame=now;
+  S.enemies.forEach(en=>{
+    if(!en.el)return;
+    if(en.x>40){
+      en.x-=25*dt;
+      en.el.style.left=en.x+'%';
+    }
+  });
+  requestAnimationFrame(gameLoop);
 }
 
 function heroShoot(){
-  if(!S.enemyEl||S.enemyHp<=0)return;
+  if(S.enemies.length===0)return;
+  const target=S.enemies.reduce((a,b)=>a.x<b.x?a:b);
+  if(!target||!target.el)return;
   const st=heroStats();
   const heroEl=$('hero');
   heroEl.classList.add('shoot');
@@ -227,26 +270,25 @@ function heroShoot(){
   const heroRect=heroEl.getBoundingClientRect();
   const arenaRect=arena.getBoundingClientRect();
   const bx=heroRect.right-arenaRect.left;
-  const by=heroRect.top-arenaRect.top+14;
+  const by=heroRect.top-arenaRect.top+28;
   const b=document.createElement('div');
   b.className='bullet';
-  b.style.left=bx+'px';
-  b.style.top=by+'px';
+  b.style.left=bx+'px';b.style.top=by+'px';
   bulletsEl.appendChild(b);
-  const enemyRect=S.enemyEl.getBoundingClientRect();
-  const tx=enemyRect.left-arenaRect.left+enemyRect.width/2;
-  const ty=enemyRect.top-arenaRect.top+enemyRect.height/2;
-  const dx=tx-bx, dy=ty-by;
-  const dur=Math.max(80,Math.hypot(dx,dy)*1.5);
+  const er=target.el.getBoundingClientRect();
+  const tx=er.left-arenaRect.left+er.width/2;
+  const ty=er.top-arenaRect.top+er.height/2;
+  const dx=tx-bx,dy=ty-by;
+  const dur=Math.max(60,Math.hypot(dx,dy)*1.2);
   b.animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px)`}],{duration:dur,easing:'linear'}).onfinish=()=>{
     b.remove();
-    if(!S.enemyEl)return;
+    if(!target.el)return;
     const crit=Math.random()<st.crit;
     const dmg=Math.floor(st.dmg*(crit?st.critD:1));
-    S.enemyHp-=dmg;
+    target.hp-=dmg;
     showDmg(tx,ty,dmg,crit);
-    if(S.enemyHp<=0)killEnemy();
-    else updateEnemyHp();
+    if(target.hp<=0)killEnemy(target);
+    else updateEnemyHp(target);
   };
 }
 
@@ -259,51 +301,42 @@ function showDmg(x,y,v,crit){
   setTimeout(()=>d.remove(),700);
 }
 
-function updateEnemyHp(){
-  if(!S.enemyEl)return;
-  const fill=S.enemyEl.querySelector('.hpbar i');
-  if(fill)fill.style.width=Math.max(0,S.enemyHp/S.enemyMaxHp*100)+'%';
-}
-
-function killEnemy(){
-  if(!S.enemyEl)return;
+function killEnemy(en){
   const st=heroStats();
-  const reward=Math.floor((5+S.lvl*2)*st.mg);
+  const reward=Math.floor((8+en.maxHp*0.3)*st.mg);
   S.money+=reward;
-  S.exp+=1;
-  if(S.enemyIsBoss){
+  S.exp+=en.isBoss?3:1;
+  if(en.isBoss){
     const dia=2+Math.floor(S.lvl/10);
     S.diamonds+=dia;
-    toast(`Босс повержен! +${dia} 💎`,'ok');
+    toast(`Босс! +${dia}💎`,'ok');
   }
-  S.enemyEl.remove();
-  S.enemyEl=null;
-  S.enemyHp=0;
-  if(S.exp>=S.expNeed){S.exp=0;S.lvl++;S.expNeed=Math.floor(5+S.lvl*3);toast('Уровень '+S.lvl+'!','ok')}
+  if(en.el)en.el.remove();
+  S.enemies=S.enemies.filter(e=>e.id!==en.id);
+  while(S.exp>=S.expNeed){S.exp-=S.expNeed;S.lvl++;S.expNeed=Math.floor(10+S.lvl*4);toast('Уровень '+S.lvl+'!','ok')}
   updateUI();
-  S.respawnTimer=setTimeout(()=>{S.respawnTimer=null;spawnEnemy()},800);
 }
 
-function enemyAttack(){
-  if(!S.enemyEl||S.enemyHp<=0)return;
+function enemyAttack(en){
+  if(!en.el||en.hp<=0)return;
   const heroEl=$('hero');
-  const enemyRect=S.enemyEl.getBoundingClientRect();
+  const er=en.el.getBoundingClientRect();
   const arenaRect=arena.getBoundingClientRect();
-  const bx=enemyRect.left-arenaRect.left;
-  const by=enemyRect.top-arenaRect.top+enemyRect.height/2;
-  const heroRect=heroEl.getBoundingClientRect();
-  const tx=heroRect.left-arenaRect.left+heroRect.width/2;
-  const ty=heroRect.top-arenaRect.top+heroRect.height/2;
+  const bx=er.left-arenaRect.left+er.width/2;
+  const by=er.top-arenaRect.top+er.height/2;
+  const hr=heroEl.getBoundingClientRect();
+  const tx=hr.left-arenaRect.left+hr.width/2;
+  const ty=hr.top-arenaRect.top+hr.height/2;
   const b=document.createElement('div');
   b.className='ebullet';
   b.style.left=bx+'px';b.style.top=by+'px';
   bulletsEl.appendChild(b);
   const dx=tx-bx,dy=ty-by;
-  b.animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px)`}],{duration:400,easing:'linear'}).onfinish=()=>{
+  b.animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px)`}],{duration:450,easing:'linear'}).onfinish=()=>{
     b.remove();
     const st=heroStats();
-    S.heroHp-=S.enemyDmg;
-    if(S.heroHp<=0){S.heroHp=st.hp;toast('Ты упал! HP восстановлено','err')}
+    S.heroHp-=en.dmg;
+    if(S.heroHp<=0){S.heroHp=Math.floor(st.hp);toast('HP восстановлено','err')}
     updateUI();
   };
 }
@@ -311,19 +344,24 @@ function enemyAttack(){
 function startCombat(){
   if(S.heroTimer)clearInterval(S.heroTimer);
   if(S.enemyTimer)clearInterval(S.enemyTimer);
+  if(S.spawnTimer)clearInterval(S.spawnTimer);
   const st=heroStats();
   S.heroTimer=setInterval(heroShoot,st.atk*1000);
-  S.enemyTimer=setInterval(enemyAttack,1200);
+  S.enemyTimer=setInterval(()=>{S.enemies.forEach(en=>{if(Math.random()<0.4)enemyAttack(en)})},800);
+  S.spawnTimer=setInterval(()=>{if(S.enemies.length<6)spawnEnemy()},1500);
 }
 
 function updateUI(){
+  const st=heroStats();
   $('tMoney').textContent=fmt(S.money);
   $('tDia').textContent=S.diamonds;
   $('tLvl').textContent=S.lvl;
   $('aLvl').textContent=S.lvl;
-  $('aEnemyName').textContent=S.enemyName||'—';
+  $('aCount').textContent=S.enemies.length;
   $('aExp').style.width=Math.min(100,S.exp/S.expNeed*100)+'%';
-  updateEnemyHp();
+  $('heroHpFill').style.width=Math.max(0,S.heroHp/st.hp*100)+'%';
+  $('heroHpText').textContent=Math.ceil(S.heroHp)+'/'+Math.floor(st.hp);
+  $('statInfo').innerHTML=`Урон: <b>${st.dmg.toFixed(1)}</b> · HP: <b>${Math.floor(st.hp)}</b><br>Крит: <b>${(st.crit*100).toFixed(0)}%</b> · ×<b>${st.critD.toFixed(1)}</b> · Доход: <b>×${st.mg.toFixed(2)}</b>`;
   renderUps();
   renderPets();
   renderRebirth();
@@ -338,7 +376,7 @@ function renderUps(){
     const ok=S.money>=cost&&!maxed;
     const d=document.createElement('div');
     d.className='card'+(ok?' buy':'');
-    d.innerHTML=`<div class="ci">${lvl}</div><div class="cb"><div class="ct">${u.name}</div><div class="cd">${u.desc} · ур. ${lvl}${u.max?'/'+u.max:''}</div></div><button class="bb" ${ok?'':'disabled'}>${maxed?'MAX':fmt(cost)+'💰'}</button>`;
+    d.innerHTML=`<div class="ci">${lvl}</div><div class="cb"><div class="ct">${u.name}</div><div class="cd">${u.desc} · ур.${lvl}${u.max?'/'+u.max:''}</div></div><button class="bb" ${ok?'':'disabled'}>${maxed?'MAX':fmt(cost)+'💰'}</button>`;
     if(!maxed)d.querySelector('.bb').onclick=()=>{if(S.money<cost)return;S.money-=cost;S.up[u.key]++;updateUI();startCombat()};
     g.appendChild(d);
   });
@@ -347,7 +385,8 @@ function renderUps(){
 function renderPets(){
   const row=$('petRow');row.innerHTML='';
   $('petMax').textContent=S.petMax;
-  S.pets.forEach((p,i)=>{
+  $('eggCoinPrice').textContent=fmt(S.eggCoinPrice);
+  S.pets.forEach(p=>{
     const t=PET_TYPES[p.type];
     const d=document.createElement('div');
     d.className='pet';
@@ -357,7 +396,7 @@ function renderPets(){
   const ups=$('petUps');ups.innerHTML='';
   S.pets.forEach((p,i)=>{
     const t=PET_TYPES[p.type];
-    const cost=petCost(p.lvl);
+    const cost=petUpCost(p.lvl);
     const ok=S.diamonds>=cost;
     const d=document.createElement('div');
     d.className='card'+(ok?' buy':'');
@@ -365,43 +404,58 @@ function renderPets(){
     d.querySelector('.bb').onclick=()=>{if(S.diamonds<cost)return;S.diamonds-=cost;p.lvl++;updateUI();startCombat()};
     ups.appendChild(d);
   });
-  $('eggBtn').disabled=S.pets.length>=S.petMax||S.diamonds<5;
+  $('eggCoinBtn').disabled=S.pets.length>=S.petMax||S.money<S.eggCoinPrice;
+  $('eggDiaBtn').disabled=S.pets.length>=S.petMax||S.diamonds<eggDiaCost();
 }
 
 function renderRebirth(){
   const minLvl=Math.min(...Object.values(S.up));
   const can=minLvl>=50;
-  const reward=can?Math.floor(S.lvl/2+S.rebirths*3):0;
+  const reward=can?Math.floor(S.lvl/2+S.rebirths*4):0;
   $('rebReward').textContent=reward+' 💎';
   $('rebBtn').disabled=!can;
   $('rebCount').textContent=S.rebirths;
-  $('tRbtn').textContent=S.rebirthBonus>0?('×'+(1+S.rebirthBonus).toFixed(1)):'';
+  $('tRbtn').textContent=S.rebirthBonus>0?('×'+(1+S.rebirthBonus).toFixed(2)):'';
 }
 
-$('eggBtn').onclick=()=>{
-  if(S.pets.length>=S.petMax){toast('Максимум петов','err');return}
-  if(S.diamonds<5){toast('Нужно 5 💎','err');return}
-  S.diamonds-=5;
+function addPet(fromDia){
+  if(S.pets.length>=S.petMax){toast('Макс. петов','err');return}
   const t=Math.floor(Math.random()*PET_TYPES.length);
   S.pets.push({type:t,lvl:1});
   toast('Новый пет: '+PET_TYPES[t].name,'ok');
   updateUI();startCombat();
-};
+}
 
+$('eggCoinBtn').onclick=()=>{
+  if(S.pets.length>=S.petMax){toast('Макс. петов','err');return}
+  if(S.money<S.eggCoinPrice){toast('Недостаточно 💰','err');return}
+  S.money-=S.eggCoinPrice;
+  S.eggCoinPrice=Math.floor(S.eggCoinPrice*1.6);
+  addPet(false);
+};
+$('eggDiaBtn').onclick=()=>{
+  if(S.pets.length>=S.petMax){toast('Макс. петов','err');return}
+  const cost=eggDiaCost();
+  if(S.diamonds<cost){toast('Недостаточно 💎','err');return}
+  S.diamonds-=cost;
+  addPet(true);
+};
 $('rebBtn').onclick=()=>{
   const minLvl=Math.min(...Object.values(S.up));
   if(minLvl<50){toast('Нужен 50 ур. всех статов','err');return}
   if(!confirm('Переродиться? Прогресс сбросится.'))return;
-  const reward=Math.floor(S.lvl/2+S.rebirths*3);
+  const reward=Math.floor(S.lvl/2+S.rebirths*4);
   S.diamonds+=reward;
   S.rebirths++;
-  S.rebirthBonus+=0.25;
-  S.lvl=1;S.exp=0;S.expNeed=5;
+  S.rebirthBonus+=0.3;
+  S.lvl=1;S.exp=0;S.expNeed=10;
   S.up={dmg:1,hp:1,atkSpd:1,critChance:1,critDmg:1,moneyGain:1};
-  S.money=0;
+  S.money=0;S.eggCoinPrice=500;
   S.petMax=3+Math.floor(S.rebirths/2);
-  toast(`Перерождение! +${reward} 💎, бонус ×${(1+S.rebirthBonus).toFixed(2)}`,'ok');
-  updateUI();startCombat();spawnEnemy();
+  S.enemies.forEach(e=>e.el&&e.el.remove());S.enemies=[];
+  S.heroHp=heroStats().hp;
+  toast(`Перерождение! +${reward}💎, ×${(1+S.rebirthBonus).toFixed(2)}`,'ok');
+  updateUI();startCombat();
 };
 
 document.querySelectorAll('.nb').forEach(b=>{
@@ -413,13 +467,14 @@ document.querySelectorAll('.nb').forEach(b=>{
     $('main').classList.add('on');
   };
 });
-$('arena').onclick=()=>{$('main').classList.remove('on');document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'))};
+arena.onclick=()=>{$('main').classList.remove('on');document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'))};
 
 let tT;
 function toast(m,t){const e=$('toast');e.textContent=m;e.className='toast show'+(t?' '+t:'');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),2000)}
 
 S.heroMaxHp=heroStats().hp;S.heroHp=S.heroMaxHp;
-spawnEnemy();
+for(let i=0;i<3;i++)spawnEnemy();
+requestAnimationFrame(gameLoop);
 startCombat();
 updateUI();
 </script>
