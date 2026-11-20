@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#070b14">
-<title>Crypto Clicker Boss</title>
+<title>Crypto Clicker Boss Edition</title>
 <style>
 :root{--bg:#070b14;--bd:rgba(120,160,255,.12);--tx:#e8eefc;--dim:#7f8db3;--mute:#5a6685;--ac:#6c8cff;--ac2:#b98cff;--ac3:#6ff2d0;--gold:#ffd166;--dng:#ff6b6b;--nh:72px;--sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
@@ -156,7 +156,8 @@ main::-webkit-scrollbar-thumb{background:rgba(120,160,255,.2);border-radius:4px}
 @media(min-width:640px){.grid{display:grid;grid-template-columns:repeat(2,1fr)}}
 @media(min-width:960px){.grid{grid-template-columns:repeat(3,1fr)}.nav{max-width:720px;margin:0 auto;border-radius:20px 20px 0 0;border-left:1px solid var(--bd);border-right:1px solid var(--bd)}}
 </style>
-</head<body>
+</head>
+<body>
 <div id="auth">
 <div class="abox">
 <div class="alog">💎</div>
@@ -277,7 +278,9 @@ main::-webkit-scrollbar-thumb{background:rgba(120,160,255,.2);border-radius:4px}
 </div>
 </div>
 </div>
-</div>><script>
+</div>
+
+<script>
 const SK='cc_save_v3',NK='cc_nick_v3';
 const state={nick:'',money:0,diamonds:0,totalClicks:0,diamondClickBonus:0,diamondIncomeBonus:0,prestigeCount:0,upgrades:{},generators:{},companies:{},diamondUpgrades:{},promoUsed:{},isAdmin:false,bestMoney:0,totalDiamondsEarned:0,level:1,levelClicks:0,bossesDefeated:0,bossActive:false,incomeBuffMult:1,incomeBuffUntil:0,clickBuffMult:1,clickBuffUntil:0};
 let saveT=null,lastT=Date.now(),bTimer=null,boss=null;
@@ -345,9 +348,7 @@ function crit(){return (state.diamondUpgrades['d3']||0)*.02}
 function fmt(n){if(n<1000)return Math.floor(n).toString();const u=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd'];let i=0;while(n>=1000&&i<u.length-1){n/=1000;i++}return n.toFixed(2)+u[i]}
 function pRew(){const w=state.money+income()*100;if(w<1e6)return 0;const b=Math.floor(Math.pow(w/1e6,.5))+state.prestigeCount;const d5=state.diamondUpgrades['d5']||0;return Math.floor(b*(1+d5*.15))}
 function needClicks(l){return CPL+(l-1)*15}
-function isBossLvl(l){return l%BE===0}
-
-function checkLvl(){const n=needClicks(state.level);if(state.levelClicks>=n){if(isBossLvl(state.level)){if(!state.bossActive&&!boss)spawnBoss()}else{state.level++;state.levelClicks=0;onLvl()}}}
+function isBossLvl(l){return l%BE===0}function checkLvl(){const n=needClicks(state.level);if(state.levelClicks>=n){if(isBossLvl(state.level)){if(!state.bossActive&&!boss)spawnBoss()}else{state.level++;state.levelClicks=0;onLvl()}}}
 function onLvl(){toast('Уровень '+state.level+'! 🎉','ok');const b=Math.floor(clickVal()*5);state.money+=b;skin();renderAll();sched()}
 function skin(){const l=state.level;let e='🖱️';if(l>=5)e='👆';if(l>=10)e='✊';if(l>=15)e='🤜';if(l>=20)e='💪';if(l>=25)e='🦾';if(l>=30)e='⚡';if(l>=40)e='🔥';if(l>=50)e='🌟';if(l>=70)e='🌌';if(l>=100)e='♾️';document.getElementById('em').textContent=e}
 
@@ -409,4 +410,14 @@ document.getElementById('pbtn2').onclick=()=>{if(!state.nick)return;const c=docu
 document.getElementById('amb').onclick=()=>{if(!state.isAdmin)return;const v=parseFloat(document.getElementById('am').value);if(!isFinite(v)||v<=0){toast('Число','err');return}state.money+=v;if(state.money>state.bestMoney)state.bestMoney=state.money;toast('+'+fmt(v)+' 💰','ok');renderAll();save()};
 document.getElementById('adb').onclick=()=>{if(!state.isAdmin)return;const v=parseFloat(document.getElementById('ad').value);if(!isFinite(v)||v<=0){toast('Число','err');return}state.diamonds+=v;state.totalDiamondsEarned+=v;toast('+'+v+' 💎','ok');renderAll();save()};
 document.getElementById('alb').onclick=()=>{if(!state.isAdmin)return;const v=parseInt(document.getElementById('al').value);if(!isFinite(v)||v<1){toast('Уровень','err');return}state.level=v;state.levelClicks=0;skin();toast('Ур.'+v,'ok');renderAll();save()};
-document.getElementById('a
+document.getElementById('ars').onclick=()=>{if(!state.isAdmin)return;if(!confirm('Сброс?'))return;state.money=0;state.totalClicks=0;state.upgrades={};state.generators={};state.companies={};state.level=1;state.levelClicks=0;toast('Сброшено','ok');renderAll();save()};
+
+setInterval(()=>{if(state.nick)save()},5000);
+window.addEventListener('beforeunload',()=>{if(state.nick)save()});
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+renderAll();
+</script>
+</body>
+</html>
+
+Готово. Полный файл с боссами,
